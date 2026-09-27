@@ -173,4 +173,16 @@
 
   # Polkit agent has to be running for any privileged GUI prompt to appear.
   security.polkit.enable = true;
+
+  # Let a pkexec authorization stick for a few minutes, like sudo's
+  # timestamp. polkit keys it to the calling process, so `rebuild-bg`'s
+  # single nh run (profile, activate, bootloader: three pkexec calls) asks
+  # for the password once, and other programs still ask for their own.
+  security.polkit.extraConfig = ''
+    polkit.addRule(function (action, subject) {
+      if (action.id == "org.freedesktop.policykit.exec" && subject.isInGroup("wheel")) {
+        return polkit.Result.AUTH_ADMIN_KEEP;
+      }
+    });
+  '';
 }
