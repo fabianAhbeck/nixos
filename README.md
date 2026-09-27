@@ -128,7 +128,7 @@ Then, in rough priority:
    `ssh-keygen -t ed25519 -C fabian.ahbeck@irori.se`, add it at
    <https://github.com/settings/keys>, then re-point this repo at
    `git@github.com:fabianAhbeck/nixos.git`.
-2. Move the repo from `/tmp/nixos` to `/home/fabian/project/nixos`, the path
+2. Move the repo from `/tmp/nixos` to `/home/fabian/Projects/nixos`, the path
    `NH_FLAKE` expects.
 3. `resume_offset` for hibernation (below).
 4. A wallpaper (below).

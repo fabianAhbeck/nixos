@@ -32,13 +32,9 @@
       ];
 
       "hyprland/workspaces" = {
-        format = "{icon}";
+        # Workspace number; the active one is highlighted via CSS below.
+        format = "{name}";
         on-click = "activate";
-        format-icons = {
-          urgent = "";
-          active = "";
-          default = "";
-        };
         persistent-workspaces."*" = 5;
       };
 
@@ -158,13 +154,18 @@
         background: transparent;
       }
       #workspaces button.active {
-        color: #89b4fa;
+        color: #1e1e2e;
+        background: #89b4fa;
+        font-weight: 700;
       }
       #workspaces button.urgent {
         color: #f38ba8;
       }
       #workspaces button:hover {
         background: rgba(137, 180, 250, 0.15);
+      }
+      #workspaces button.active:hover {
+        background: #89b4fa;
       }
 
       #clock,

@@ -18,10 +18,10 @@
 
     shellAliases = {
       # nh wraps nixos-rebuild with a progress view and a generation diff.
-      rebuild = "nh os switch";
+      # `rebuild` itself is a script (see home.packages below).
       rebuild-boot = "nh os boot";
       rebuild-test = "nh os test";
-      update = "nix flake update --flake /home/fabian/project/nixos";
+      update = "nix flake update --flake /home/fabian/Projects/nixos";
       gc = "nh clean all --keep 5 --keep-since 30d";
 
       ls = "eza --group-directories-first";
@@ -133,4 +133,12 @@
       UserKnownHostsFile = "~/.ssh/known_hosts";
     };
   };
+
+  # `rebuild` as a real command rather than an alias, so it works from any
+  # shell, a keybinding, or a script. Extra args go straight to nh.
+  home.packages = [
+    (pkgs.writeShellScriptBin "rebuild" ''
+      exec ${pkgs.nh}/bin/nh os switch /home/fabian/Projects/nixos "$@"
+    '')
+  ];
 }

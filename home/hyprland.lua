@@ -154,6 +154,22 @@ end
 hl.bind(key("S"), hl.dsp.workspace.toggle_special("magic"))
 hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 
+-- Claude Code scratchpad for this config repo. SUPER+C shows/hides it; the
+-- session keeps running while hidden. If it isn't running (first press, or
+-- after /exit), the press launches it.
+local claude_class = "claude-nixos"
+hl.bind(key("C"), function()
+  if #hl.get_windows({ class = claude_class }) == 0 then
+    if not hl.get_active_special_workspace() then
+      hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+    end
+    hl.exec_cmd(terminal .. " --class " .. claude_class
+      .. " --directory /home/fabian/Projects/nixos claude")
+  else
+    hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+  end
+end)
+
 hl.bind(key("mouse_down"), hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(key("mouse_up"), hl.dsp.focus({ workspace = "e-1" }))
 
@@ -201,6 +217,15 @@ hl.window_rule({
   name  = "float-utilities",
   match = { class = "^(pavucontrol|blueman-manager|nm-connection-editor|org.gnome.Calculator|gnome-disks)$" },
   float = true,
+})
+
+hl.window_rule({
+  name      = "claude-scratchpad",
+  match     = { class = "^(claude-nixos)$" },
+  workspace = "special:claude",
+  float     = true,
+  size      = "(monitor_w*0.7) (monitor_h*0.75)",
+  center    = true,
 })
 
 hl.window_rule({

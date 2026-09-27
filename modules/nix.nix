@@ -72,7 +72,7 @@
   ];
 
   # `nh os switch` looks here for the flake when you don't pass a path.
-  environment.sessionVariables.NH_FLAKE = "/home/fabian/project/nixos";
+  environment.sessionVariables.NH_FLAKE = "/home/fabian/Projects/nixos";
 
   # Documentation costs build time and disk; keep man pages, drop the rest.
   documentation = {
