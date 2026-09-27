@@ -129,6 +129,10 @@ hl.bind(key("B"), exec(browser))
 hl.bind(key("E"), exec("nautilus"))
 hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
 
+-- Rebuild the system in a small floating terminal (see rebuild-popup in
+-- home/hyprland.nix).
+hl.bind(shift("C"), exec(terminal .. " --class rebuild-popup rebuild-popup"))
+
 -- Window management
 hl.bind(key("Q"), hl.dsp.window.close())
 hl.bind(key("F"), hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
@@ -234,6 +238,14 @@ hl.window_rule({
   float     = true,
   size      = "(monitor_w*0.7) (monitor_h*0.75)",
   center    = true,
+})
+
+hl.window_rule({
+  name   = "rebuild-popup",
+  match  = { class = "^(rebuild-popup)$" },
+  float  = true,
+  size   = "(monitor_w*0.5) (monitor_h*0.5)",
+  center = true,
 })
 
 hl.window_rule({

@@ -21,6 +21,21 @@
   # Lock / logout / suspend / hibernate / reboot / shut down, as a wofi list.
   # Bound to SUPER+SHIFT+Q and the power button in Waybar.
   home.packages = [
+    # Body of the SUPER+SHIFT+C rebuild popup: runs `rebuild` (nh asks for
+    # the sudo password only at the switch step), then notifies and waits.
+    (pkgs.writeShellScriptBin "rebuild-popup" ''
+      rebuild
+      status=$?
+      if [ "$status" -eq 0 ]; then
+        ${pkgs.libnotify}/bin/notify-send -a rebuild "Rebuild done" "The new configuration is active."
+        printf '\n\033[32mRebuild done.\033[0m Press any key to close.'
+      else
+        ${pkgs.libnotify}/bin/notify-send -a rebuild -u critical "Rebuild failed" "Exit code $status, see the rebuild window."
+        printf '\n\033[31mRebuild failed (exit %s).\033[0m Press any key to close.' "$status"
+      fi
+      read -rsn1
+    '')
+
     (pkgs.writeShellScriptBin "powermenu" ''
       choice=$(printf '%s\n' \
         "󰌾  Lock" "󰍃  Log out" "󰤄  Suspend" "󰒲  Hibernate" "󰜉  Reboot" "󰐥  Shut down" \
