@@ -184,6 +184,25 @@ hl.bind(key("C"), function()
   end
 end)
 
+-- New windows open on the focused workspace, which is the Claude pane while
+-- it is shown. Keep that pane for Claude only: send anything else to the
+-- regular workspace underneath, hide the pane and focus the new window. The
+-- hide/focus runs on a timer because it has no effect inside window.open.
+hl.on("window.open", function(w)
+  if not w or w.class == claude_class then return end
+  local ws = w.workspace
+  if not (ws and ws.name == "special:claude") then return end
+  local target = hl.get_active_workspace()
+  if not target then return end
+  hl.dispatch(hl.dsp.window.move({ workspace = target.id, window = w }))
+  hl.timer(function()
+    if hl.get_active_special_workspace() then
+      hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+    end
+    hl.dispatch(hl.dsp.focus({ window = w }))
+  end, { timeout = 1, type = "oneshot" })
+end)
+
 hl.bind(key("mouse_down"), hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(key("mouse_up"), hl.dsp.focus({ workspace = "e-1" }))
 
