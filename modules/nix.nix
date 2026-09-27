@@ -44,14 +44,6 @@
     registry.nixpkgs.flake = inputs.nixpkgs;
     nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
 
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-      # Don't run GC on battery.
-      persistent = true;
-    };
-
     optimise.automatic = true;
   };
 
@@ -65,14 +57,24 @@
 
   environment.systemPackages = with pkgs; [
     git # needed before home-manager's git is on PATH, e.g. in a rescue shell
-    nh # nicer `nixos-rebuild` wrapper, see the alias in home/shell.nix
     nix-output-monitor
     nvd # diff two generations: `nvd diff /run/current-system result`
     nix-tree
   ];
 
-  # `nh os switch` looks here for the flake when you don't pass a path.
-  environment.sessionVariables.NH_FLAKE = "/home/fabian/Projects/nixos";
+  # nh: the `nixos-rebuild` wrapper behind `rebuild`. `flake` sets NH_FLAKE,
+  # so `nh os switch` finds the repo without a path. `clean` replaces
+  # nix.gc: it also prunes old generations (and their boot entries) while
+  # always keeping the last few.
+  programs.nh = {
+    enable = true;
+    flake = "/home/fabian/Projects/nixos";
+    clean = {
+      enable = true;
+      dates = "weekly";
+      extraArgs = "--keep 5 --keep-since 30d";
+    };
+  };
 
   # Documentation costs build time and disk; keep man pages, drop the rest.
   documentation = {
