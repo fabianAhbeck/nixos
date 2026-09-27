@@ -18,7 +18,6 @@ local browser  = "firefox"
 -- it. Setting it here covers every shell and GUI app launched from Hyprland.
 hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
 
-
 ---------------------------------------------------------------------------
 -- Monitors -- the UX425EA panel is 1920x1080. `hyprctl monitors` after
 -- first boot if you attach anything external.
@@ -136,7 +135,9 @@ hl.bind(key("F"), hl.dsp.window.fullscreen({ mode = "fullscreen", action = "togg
 hl.bind(shift("F"), hl.dsp.window.float({ action = "toggle" }))
 hl.bind(key("P"), hl.dsp.window.pseudo())
 hl.bind(key("J"), hl.dsp.layout("togglesplit"))
-hl.bind(shift("Q"), hl.dsp.exit())
+-- Logout goes through the power menu (see home/hyprland.nix) so a slip next
+-- to SUPER+Q can't end the session.
+hl.bind(shift("Q"), exec("powermenu"))
 
 -- Session
 hl.bind(key("L"), exec("loginctl lock-session"))

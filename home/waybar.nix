@@ -29,6 +29,7 @@
         "memory"
         "temperature"
         "battery"
+        "custom/power"
       ];
 
       "hyprland/workspaces" = {
@@ -128,6 +129,12 @@
         ];
       };
 
+      "custom/power" = {
+        format = "󰐥";
+        tooltip-format = "Power menu";
+        on-click = "powermenu";
+      };
+
       tray = {
         icon-size = 16;
         spacing = 8;
@@ -177,6 +184,7 @@
       #bluetooth,
       #pulseaudio,
       #privacy,
+      #custom-power,
       #tray {
         padding: 0 10px;
       }
@@ -189,6 +197,7 @@
       #battery.critical { color: #f38ba8; }
       #temperature.critical { color: #f38ba8; }
       #network.disconnected { color: #f38ba8; }
+      #custom-power { color: #f38ba8; padding-right: 14px; }
     '';
   };
 }
