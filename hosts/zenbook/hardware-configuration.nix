@@ -1,8 +1,10 @@
-# Placeholder matching the hardware probed on the current Ubuntu install.
+# Hardware detected by nixos-generate-config during the install. The file
+# committed at first was a placeholder probed from the old Ubuntu install,
+# and it lacked `vmd`: on this laptop the NVMe drive sits behind Intel VMD,
+# so without that module the initrd never sees the disk and boot hangs
+# before the LUKS prompt. Regenerate (as root) with:
 #
-# REGENERATE THIS during the NixOS install and diff it against this file:
-#
-#   nixos-generate-config --no-filesystems --root /mnt
+#   nixos-generate-config --no-filesystems --show-hardware-config
 #
 # `--no-filesystems` matters: disko.nix owns fileSystems and swapDevices.
 {
@@ -17,10 +19,11 @@
   boot.initrd.availableKernelModules = [
     "xhci_pci"
     "thunderbolt"
+    "vmd" # NVMe is behind Intel VMD; without it the disk never appears
     "nvme"
     "usb_storage"
     "sd_mod"
-    "sdhci_pci"
+    "rtsx_pci_sdmmc" # SD card reader
   ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
