@@ -140,21 +140,23 @@ hl.bind(key("Q"), hl.dsp.window.close())
 hl.bind(key("F"), hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
 hl.bind(shift("F"), hl.dsp.window.float({ action = "toggle" }))
 hl.bind(key("P"), hl.dsp.window.pseudo())
-hl.bind(key("J"), hl.dsp.layout("togglesplit"))
+hl.bind(key("T"), hl.dsp.layout("togglesplit"))
 -- Logout goes through the power menu (see home/hyprland.nix) so a slip next
 -- to SUPER+Q can't end the session.
 hl.bind(shift("Q"), exec("powermenu"))
 
 -- Session
-hl.bind(key("L"), exec("loginctl lock-session"))
+-- Escape rather than L, which is vim-right below. Caps Lock is Escape too.
+hl.bind(key("Escape"), exec("loginctl lock-session"))
 
--- Focus and move windows
-for k, dir in pairs({ left = "left", right = "right", up = "up", down = "down" }) do
+-- Focus and move windows: arrows or vim keys (H/J/K/L = left/down/up/right).
+for k, dir in pairs({
+  left = "left", right = "right", up = "up", down = "down",
+  H = "left", J = "down", K = "up", L = "right",
+}) do
   hl.bind(key(k), hl.dsp.focus({ direction = dir }))
   hl.bind(shift(k), hl.dsp.window.move({ direction = dir }))
 end
-hl.bind(key("H"), hl.dsp.focus({ direction = "left" }))
-hl.bind(key("semicolon"), hl.dsp.focus({ direction = "right" }))
 
 -- Workspaces
 for i = 1, 10 do

@@ -24,10 +24,9 @@ them. `SUPER` is the Windows key.
 | `SUPER + F` | Toggle fullscreen |
 | `SUPER + SHIFT + F` | Toggle floating |
 | `SUPER + P` | Pseudo-tile (keep the window's own size inside its tile) |
-| `SUPER + J` | Switch split direction (side by side / stacked) |
-| `SUPER + arrows` | Move focus |
-| `SUPER + H` / `SUPER + ;` | Move focus left / right |
-| `SUPER + SHIFT + arrows` | Move window |
+| `SUPER + T` | Switch split direction (side by side / stacked) |
+| `SUPER + arrows` or `SUPER + H/J/K/L` | Move focus (vim keys: left/down/up/right) |
+| `SUPER + SHIFT + arrows` or `SUPER + SHIFT + H/J/K/L` | Move window |
 | `SUPER + left-drag` | Move window with the mouse |
 | `SUPER + right-drag` | Resize window with the mouse |
 
@@ -46,7 +45,7 @@ them. `SUPER` is the Windows key.
 
 | Keys | Action |
 | --- | --- |
-| `SUPER + L` | Lock screen |
+| `SUPER + Escape` (or `SUPER + Caps Lock`) | Lock screen |
 | `SUPER + SHIFT + Q` | Power menu: lock, log out, suspend, hibernate, reboot, shut down |
 
 The power menu is also the red button at the right end of Waybar.
