@@ -33,7 +33,6 @@
   environment.systemPackages = with pkgs; [
     # Communication
     discord
-    slack
 
     # Media
     vlc
@@ -46,7 +45,6 @@
     hunspellDicts.sv_SE
 
     # Dev-adjacent GUI
-    vscode
     postman
     wireshark
 
