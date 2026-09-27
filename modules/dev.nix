@@ -14,6 +14,11 @@
     # (rust-toolchain.toml) are common and rustup is what honours them.
     rustup
 
+    # Language servers the nvim config (dotfiles repo) enables. Mason can
+    # also install these; having them here means they work offline too.
+    lua-language-server
+    tflint
+
     nodejs_22
     pnpm
     typescript-language-server
@@ -91,6 +96,11 @@
 
   # direnv is configured per-user in home/shell.nix, so the shell hook is
   # only installed once.
+
+  # Run unpatched prebuilt binaries: Mason's language servers, blink.cmp's
+  # fuzzy matcher, and the odd vendor CLI. Without it they fail with
+  # "No such file or directory" because there is no /lib64/ld-linux.
+  programs.nix-ld.enable = true;
 
   programs.zsh.enable = true; # must be enabled system-wide to be a login shell
 

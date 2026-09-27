@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   imports = [
     ./hyprland.nix
@@ -90,17 +90,17 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    # Kept deliberately thin: this is enough to be usable in a rescue shell.
-    # A full config belongs in its own repo under ~/.config/nvim, which this
-    # does not manage.
-    extraConfig = ''
-      set number relativenumber
-      set expandtab shiftwidth=2 tabstop=2
-      set ignorecase smartcase
-      set undofile
-      set clipboard=unnamedplus
-    '';
+    # init.lua comes from the dotfiles repo (below); load HM's own bits
+    # through the wrapper instead of writing ~/.config/nvim/init.lua.
+    sideloadInitLua = true;
   };
+
+  # The config itself lives in the dotfiles repo (lazy.nvim + Mason). Linked
+  # rather than copied into the store, so edits apply without a rebuild and
+  # lazy.nvim can still write lazy-lock.json. Mason's downloaded servers run
+  # thanks to programs.nix-ld (modules/dev.nix).
+  xdg.configFile."nvim".source =
+    config.lib.file.mkOutOfStoreSymlink "/home/fabian/Projects/dotfiles/.config/nvim";
 
   ###########################################################################
   # Notifications, launcher, lock, idle
