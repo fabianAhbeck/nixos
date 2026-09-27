@@ -1,6 +1,6 @@
 # Hyprland session: compositor, greeter, portals, audio, graphics, fonts.
 # The per-user Hyprland *configuration* lives in home/hyprland.nix.
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   ###########################################################################
   # Compositor
@@ -22,8 +22,12 @@
     # greeter doesn't fight the boot log for the console. Don't hand-roll this
     # in systemd.services.greetd -- it collides with the module.
     useTextGreeter = true;
+    # start-hyprland is Hyprland's launcher: it restarts the compositor after a
+    # crash instead of dropping to the greeter, and Hyprland warns at startup
+    # without it. No --remember-session: there is only one session, and a
+    # remembered one ("Hyprland") would override --cmd.
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd Hyprland";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${config.programs.hyprland.package}/bin/start-hyprland";
       user = "greeter";
     };
   };
