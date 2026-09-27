@@ -166,38 +166,67 @@ end
 hl.bind(key("S"), hl.dsp.workspace.toggle_special("magic"))
 hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 
--- Claude Code scratchpad for this config repo. SUPER+C shows/hides it; the
--- session keeps running while hidden. If it isn't running (first press, or
--- after /exit), the press launches it and resumes the repo's most recent
--- conversation, or starts a new one if there is none.
-local claude_class = "claude-nixos"
-hl.bind(key("C"), function()
-  if #hl.get_windows({ class = claude_class }) == 0 then
-    if not hl.get_active_special_workspace() then
-      hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+-- Claude Code scratchpads, one per repo, each on its own special workspace
+-- and each resuming that repo's most recent conversation (or starting a
+-- new one). SUPER+C hides whichever is showing; otherwise it opens a picker
+-- (claude-pick in home/hyprland.nix) that calls claude_show(). Sessions keep
+-- running while hidden, and both can run at once. The nixos pane keeps its
+-- original workspace name, "claude".
+local claude_sessions = {
+  nixos    = { class = "claude-nixos",    ws = "claude",          dir = "/home/fabian/Projects/nixos" },
+  dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = "/home/fabian/Projects/dotfiles" },
+}
+
+-- The claude session whose pane is `ws_name` ("special:..."), if any.
+local function claude_session_on(ws_name)
+  for _, sess in pairs(claude_sessions) do
+    if ws_name == "special:" .. sess.ws then return sess end
+  end
+end
+
+-- Returns a function so `hyprctl dispatch "claude_show('dotfiles')"` works:
+-- hyprctl wraps the expression in hl.dispatch(), which runs functions.
+function claude_show(name)
+  return function()
+    local sess = claude_sessions[name]
+    if not sess then return end
+    local shown = hl.get_active_special_workspace()
+    if not (shown and shown.name == "special:" .. sess.ws) then
+      hl.dispatch(hl.dsp.workspace.toggle_special(sess.ws))
     end
-    hl.exec_cmd(terminal .. " --class " .. claude_class
-      .. " --directory /home/fabian/Projects/nixos"
-      .. " sh -c 'claude --continue || claude'")
+    if #hl.get_windows({ class = sess.class }) == 0 then
+      hl.exec_cmd(terminal .. " --class " .. sess.class .. " --directory " .. sess.dir
+        .. " sh -c 'claude --continue || claude'")
+    end
+  end
+end
+
+hl.bind(key("C"), function()
+  local shown = hl.get_active_special_workspace()
+  local sess = shown and claude_session_on(shown.name)
+  if sess then
+    hl.dispatch(hl.dsp.workspace.toggle_special(sess.ws))
   else
-    hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+    hl.exec_cmd("claude-pick")
   end
 end)
 
--- New windows open on the focused workspace, which is the Claude pane while
--- it is shown. Keep that pane for Claude only: send anything else to the
--- regular workspace underneath, hide the pane and focus the new window. The
--- hide/focus runs on a timer because it has no effect inside window.open.
+-- New windows open on the focused workspace, which is a Claude pane while
+-- one is shown. Keep the panes for their Claude window only: send anything
+-- else to the regular workspace underneath, hide the pane and focus the new
+-- window. The hide/focus runs on a timer: it has no effect inside window.open.
 hl.on("window.open", function(w)
-  if not w or w.class == claude_class then return end
+  if not w then return end
   local ws = w.workspace
-  if not (ws and ws.name == "special:claude") then return end
+  local sess = ws and claude_session_on(ws.name)
+  if not sess or w.class == sess.class then return end
   local target = hl.get_active_workspace()
   if not target then return end
   hl.dispatch(hl.dsp.window.move({ workspace = target.id, window = w }))
   hl.timer(function()
-    if hl.get_active_special_workspace() then
-      hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
+    local shown = hl.get_active_special_workspace()
+    if shown and claude_session_on(shown.name) then
+      hl.dispatch(hl.dsp.workspace.toggle_special(shown.name:sub(#"special:" + 1)))
     end
     hl.dispatch(hl.dsp.focus({ window = w }))
   end, { timeout = 1, type = "oneshot" })
@@ -256,14 +285,16 @@ hl.window_rule({
   float = true,
 })
 
-hl.window_rule({
-  name      = "claude-scratchpad",
-  match     = { class = "^(claude-nixos)$" },
-  workspace = "special:claude",
-  float     = true,
-  size      = "(monitor_w*0.7) (monitor_h*0.75)",
-  center    = true,
-})
+for name, sess in pairs(claude_sessions) do
+  hl.window_rule({
+    name      = "claude-" .. name,
+    match     = { class = "^(" .. sess.class .. ")$" },
+    workspace = "special:" .. sess.ws,
+    float     = true,
+    size      = "(monitor_w*0.7) (monitor_h*0.75)",
+    center    = true,
+  })
+end
 
 hl.window_rule({
   name   = "rebuild-log",

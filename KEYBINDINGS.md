@@ -13,7 +13,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + W` | Firefox |
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
-| `SUPER + C` | Show/hide Claude Code in this repo (resumes the last conversation) |
+| `SUPER + C` | Claude Code: hide the pane that is showing, or pick a session (nixos / dotfiles) to show. Each resumes its repo's last conversation; ● = running |
 | `SUPER + SHIFT + C` | Rebuild the system in the background; a notification tracks it and a password dialog appears when the build is done |
 
 ## Windows
