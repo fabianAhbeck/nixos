@@ -18,6 +18,9 @@
     # also install these; having them here means they work offline too.
     lua-language-server
     tflint
+    # nvim-treesitter's main branch builds parsers with the tree-sitter CLI
+    # (plus gcc, below).
+    tree-sitter
 
     nodejs_22
     pnpm
