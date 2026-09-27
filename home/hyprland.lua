@@ -119,6 +119,7 @@ hl.animation({ leaf = "fade",       enabled = true, speed = 3, bezier = "default
 ---------------------------------------------------------------------------
 -- Key bindings
 ---------------------------------------------------------------------------
+-- Cheat-sheet: KEYBINDINGS.md at the repo root. Keep it in sync.
 local function key(k) return mod .. " + " .. k end
 local function shift(k) return mod .. " + SHIFT + " .. k end
 local exec = hl.dsp.exec_cmd
@@ -126,7 +127,6 @@ local exec = hl.dsp.exec_cmd
 -- Launching
 hl.bind(key("Return"), exec(terminal))
 hl.bind(key("D"), exec(menu))
-hl.bind(key("B"), exec(browser))
 hl.bind(key("W"), exec(browser))
 hl.bind(key("E"), exec("nautilus"))
 hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))

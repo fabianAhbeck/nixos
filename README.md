@@ -6,6 +6,8 @@ Flake-based NixOS config for `zenbook`: Intel i7-1165G7 (Tiger Lake), 32 GB RAM,
 Hyprland on Wayland, LUKS + btrfs, Home Manager, Swedish keyboard with an
 English UI.
 
+Keybindings and handy commands: [KEYBINDINGS.md](KEYBINDINGS.md).
+
 ## Status
 
 `nix flake check` passes against the pinned inputs in `flake.lock`
