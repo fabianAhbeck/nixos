@@ -35,65 +35,103 @@ home/
   shell.nix               zsh, starship, fzf, tmux, aliases
 ```
 
-## Before you wipe the machine
+## Installing
 
-1. **Back up.** The install destroys everything on `/dev/nvme0n1`. At minimum:
-   `~/.ssh`, `~/.gnupg`, `~/.config`, browser profiles, any VM images under
-   `/var/lib/libvirt`, and anything not already pushed to a remote.
-2. **Push this repo somewhere you can reach from the installer** (GitHub, or a
-   USB stick — it's small).
-3. Write a NixOS ISO (the graphical one is convenient because it has a browser
-   and Wi-Fi tooling): https://nixos.org/download
+Written for the actual machine this replaces: an ASUS ZenBook UX425EA running
+Ubuntu 24.04, with a 30 GB SanDisk Extreme USB stick.
 
-## Getting the config onto the installer
+### Devices
 
-The repo is public at <https://github.com/fabianAhbeck/nixos>, so the ISO can
-clone it directly — no credentials needed:
+| | |
+|---|---|
+| USB stick | `/dev/sda` — SanDisk Extreme, 29.8 G, removable |
+| Internal disk | `/dev/nvme0n1` — 953.9 G NVMe — **this is what gets wiped** |
 
-```sh
-nix-shell -p git --run 'git clone https://github.com/fabianAhbeck/nixos /tmp/nixos'
+Re-check both with `lsblk` before each destructive step. USB enumeration is not
+guaranteed stable across reboots, and `sda` vs `nvme0n1` is the difference
+between losing a USB stick and losing the machine.
+
+### Step 1 — Write the ISO to the stick
+
+Using `nixos-graphical-25.11` — the graphical ISO, for its browser and GUI
+Wi-Fi. Verified against releases.nixos.org:
+
+```
+cd96cc2a8d6dde124bbd666126f09003017156804336f994b8dd2d09472c9c7e
 ```
 
-Nothing in this config is secret, so public is fine. If you'd rather flip it
-back to private after the install, you can — the installer is the only step
-that needs to read it, and the alternatives are a copy on the USB stick,
-`gh auth login` with the device flow, a read-only fine-grained PAT, or a
-throwaway SSH key.
+The stick had Proxmox VE on it, so unmount before writing:
 
-## Install
+```sh
+sudo umount /dev/sda3
+lsblk -o NAME,SIZE,TRAN,MODEL /dev/sda     # confirm it is still the SanDisk
 
-Boot the ISO, get networking up (`nmtui` for Wi-Fi), get the config onto the
-machine as above, then:
+sudo dd if=~/Downloads/nixos-graphical-25.11.7766.fea3b367d61c-x86_64-linux.iso \
+        of=/dev/sda bs=4M status=progress oflag=direct conv=fsync
+```
+
+2–4 minutes. Let `conv=fsync` return before pulling the stick.
+
+The ISO is 25.11 while this flake tracks unstable (26.11pre). That's fine —
+`nixos-install` builds the system from the flake's own nixpkgs, not the ISO's.
+
+### Step 2 — Boot it
+
+Tap **ESC** repeatedly as the ASUS logo appears for the boot menu (**F2** is
+BIOS setup). Secure Boot is already disabled on this machine. Pick the USB
+entry, then "NixOS Installer".
+
+### Step 3 — Install
+
+Connect Wi-Fi from the top-right menu, open a terminal:
 
 ```sh
 sudo -i
+export NIX_CONFIG="experimental-features = nix-command flakes"
+
+lsblk                      # confirm the internal disk is still nvme0n1
+
+git clone https://github.com/fabianAhbeck/nixos /tmp/nixos
 cd /tmp/nixos
 
-# 1. Confirm the disk is still nvme0n1 before disko eats it
-lsblk
+# Partition, format, mount. Prompts for the LUKS passphrase, twice.
+nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#zenbook
 
-# 2. Partition, format and mount. Prompts for the LUKS passphrase.
-#    --mode destroy,format,mount does exactly what it says.
-nix --experimental-features "nix-command flakes" run github:nix-community/disko -- \
-  --mode destroy,format,mount \
-  --flake .#zenbook
-
-# 3. Regenerate hardware-configuration.nix for the real machine.
-#    --no-filesystems is required: disko.nix owns fileSystems/swapDevices.
+# Probe the real hardware. --no-filesystems because disko owns those.
 nixos-generate-config --no-filesystems --root /mnt
 cp /mnt/etc/nixos/hardware-configuration.nix ./hosts/zenbook/hardware-configuration.nix
+git add -A                 # Nix ignores untracked files in a git tree
 
-# 4. IMPORTANT: if /tmp/nixos is a git clone, Nix ignores untracked files.
-#    Stage everything so the flake actually sees it.
-git add -A
-
-# 5. Install
-nixos-install --flake .#zenbook
-
-# 6. Set the user password, then reboot
-nixos-enter --root /mnt -c 'passwd fabian'
+nixos-install --flake .#zenbook               # ~3-4 GB, 15-30 min
+nixos-enter --root /mnt -c 'passwd fabian'    # do not skip
 reboot
 ```
+
+Pull the stick as it reboots.
+
+### Two things that will bite you
+
+- **`passwd fabian` is mandatory.** The config defines the user with no
+  password. Skip this and greetd will refuse the login, and fixing it means
+  booting the ISO again.
+- **The LUKS passphrase has no recovery.** Forget it and the disk is gone.
+
+### First login
+
+tuigreet, then Hyprland. `SUPER+Return` for a terminal, `SUPER+D` for the
+launcher, `SUPER+Q` closes a window, `SUPER+SHIFT+Q` exits the session. The
+full bind list is in `home/hyprland.nix`.
+
+Then, in rough priority:
+
+1. New SSH key for GitHub — the old one does not survive the wipe:
+   `ssh-keygen -t ed25519 -C fabian.ahbeck@irori.se`, add it at
+   <https://github.com/settings/keys>, then re-point this repo at
+   `git@github.com:fabianAhbeck/nixos.git`.
+2. Move the repo from `/tmp/nixos` to `/home/fabian/project/nixos`, the path
+   `NH_FLAKE` expects.
+3. `resume_offset` for hibernation (below).
+4. A wallpaper (below).
 
 ### The untracked-file gotcha
 
@@ -105,7 +143,7 @@ the committed placeholder instead — and you get a system that won't boot.
 
 Two ways to avoid it:
 
-- `git add -A` before installing (step 4 above), or
+- `git add -A` before installing, as Step 3 does, or
 - bypass git semantics entirely: `nixos-install --flake path:/tmp/nixos#zenbook`
 
 The `path:` prefix makes Nix copy the directory as-is, untracked files included.
@@ -115,11 +153,6 @@ The `path:` prefix makes Nix copy the directory as-is, untracked files included.
 `flake.lock` is committed, pinning nixpkgs, home-manager, disko and
 nixos-hardware to the revisions this config was verified against. The install
 will use exactly those. Bump them later with `update`.
-
-## After the first boot
-
-Move the repo to `/home/fabian/project/nixos` (the path `NH_FLAKE` points at),
-set up an SSH key for GitHub so you can push again, and rebuild with `rebuild`.
 
 ## Post-install
 
@@ -143,11 +176,13 @@ Rebuild, reboot, then test with `systemctl hibernate`.
 
 ### Wallpaper
 
-`swww` runs but starts blank. Drop an image and set it:
+`awww-daemon` runs but starts blank. Drop an image and set it:
 
 ```sh
-swww img ~/Pictures/wallpaper.png
+awww img ~/Pictures/wallpaper.png
 ```
+
+(`swww` was renamed to `awww` upstream; the daemon binary is `awww-daemon`.)
 
 ### Things worth checking on first boot
 
