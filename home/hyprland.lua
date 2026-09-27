@@ -14,6 +14,11 @@ local terminal = "kitty"
 local menu     = "wofi --show drun"
 local browser  = "firefox"
 
+-- gcr-ssh-agent (from gnome-keyring) is running, but nothing points SSH at
+-- it. Setting it here covers every shell and GUI app launched from Hyprland.
+hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
+
+
 ---------------------------------------------------------------------------
 -- Monitors -- the UX425EA panel is 1920x1080. `hyprctl monitors` after
 -- first boot if you attach anything external.
