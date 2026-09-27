@@ -127,6 +127,7 @@ local exec = hl.dsp.exec_cmd
 hl.bind(key("Return"), exec(terminal))
 hl.bind(key("D"), exec(menu))
 hl.bind(key("B"), exec(browser))
+hl.bind(key("W"), exec(browser))
 hl.bind(key("E"), exec("nautilus"))
 hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
 
