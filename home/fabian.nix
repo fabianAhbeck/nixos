@@ -121,6 +121,10 @@
     };
   };
 
+  # Volume / brightness / media popups, driven by swayosd-client in the
+  # Hyprland key bindings.
+  services.swayosd.enable = true;
+
   programs.wofi = {
     enable = true;
     settings = {

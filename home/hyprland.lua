@@ -196,19 +196,23 @@ hl.bind(key("mouse:272"), hl.dsp.window.drag(), { mouse = true })
 hl.bind(key("mouse:273"), hl.dsp.window.resize(), { mouse = true })
 
 -- Media and brightness keys, still live on the lock screen; volume and
--- brightness repeat while held.
+-- brightness repeat while held. swayosd-client makes the change and shows an
+-- on-screen popup (server: services.swayosd in home/fabian.nix).
 local held = { locked = true, repeating = true }
 local locked = { locked = true }
-hl.bind("XF86AudioRaiseVolume", exec("wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+"), held)
-hl.bind("XF86AudioLowerVolume", exec("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), held)
-hl.bind("XF86MonBrightnessUp", exec("brightnessctl set 5%+"), held)
-hl.bind("XF86MonBrightnessDown", exec("brightnessctl set 5%-"), held)
+local osd = "swayosd-client "
+-- Screen only; without --device it would also step the keyboard backlight.
+local screen = " --device intel_backlight"
+hl.bind("XF86AudioRaiseVolume", exec(osd .. "--output-volume +5 --max-volume 100"), held)
+hl.bind("XF86AudioLowerVolume", exec(osd .. "--output-volume -5"), held)
+hl.bind("XF86MonBrightnessUp", exec(osd .. "--brightness +5" .. screen), held)
+hl.bind("XF86MonBrightnessDown", exec(osd .. "--brightness -5" .. screen), held)
 
-hl.bind("XF86AudioMute", exec("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), locked)
-hl.bind("XF86AudioMicMute", exec("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), locked)
-hl.bind("XF86AudioPlay", exec("playerctl play-pause"), locked)
-hl.bind("XF86AudioNext", exec("playerctl next"), locked)
-hl.bind("XF86AudioPrev", exec("playerctl previous"), locked)
+hl.bind("XF86AudioMute", exec(osd .. "--output-volume mute-toggle"), locked)
+hl.bind("XF86AudioMicMute", exec(osd .. "--input-volume mute-toggle"), locked)
+hl.bind("XF86AudioPlay", exec(osd .. "--playerctl play-pause"), locked)
+hl.bind("XF86AudioNext", exec(osd .. "--playerctl next"), locked)
+hl.bind("XF86AudioPrev", exec(osd .. "--playerctl prev"), locked)
 
 ---------------------------------------------------------------------------
 -- Window rules
