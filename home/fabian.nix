@@ -1,4 +1,12 @@
 { config, pkgs, ... }:
+let
+  qtctAppearance = {
+    custom_palette = true;
+    color_scheme_path = "${config.xdg.configHome}/qtct/catppuccin-mocha.conf";
+    style = "Fusion";
+    icon_theme = "Papirus-Dark";
+  };
+in
 {
   imports = [
     ./hyprland.nix
@@ -234,11 +242,33 @@
     };
   };
 
+  # Qt apps (the polkit password dialog, VLC, Wireshark, ...) get the same
+  # Catppuccin Mocha colours as kitty, Waybar and hyprlock. The palette comes
+  # from qt6ct/qt5ct; Fusion is the Qt style that actually follows it.
   qt = {
     enable = true;
-    platformTheme.name = "adwaita";
-    style.name = "adwaita-dark";
+    platformTheme.name = "qtct";
+    qt5ctSettings.Appearance = qtctAppearance;
+    qt6ctSettings.Appearance = qtctAppearance;
   };
+
+  # Colours in QPalette role order: WindowText, Button, Light, Midlight, Dark,
+  # Mid, Text, BrightText, ButtonText, Base, Window, Shadow, Highlight,
+  # HighlightedText, Link, LinkVisited, AlternateBase, NoRole, ToolTipBase,
+  # ToolTipText, PlaceholderText, Accent.
+  xdg.configFile."qtct/catppuccin-mocha.conf".text = ''
+    [ColorScheme]
+    active_colors=#cdd6f4, #313244, #585b70, #45475a, #11111b, #181825, #cdd6f4, #ffffff, #cdd6f4, #181825, #1e1e2e, #11111b, #89b4fa, #1e1e2e, #89b4fa, #cba6f7, #313244, #1e1e2e, #313244, #cdd6f4, #6c7086, #89b4fa
+    inactive_colors=#cdd6f4, #313244, #585b70, #45475a, #11111b, #181825, #cdd6f4, #ffffff, #cdd6f4, #181825, #1e1e2e, #11111b, #89b4fa, #1e1e2e, #89b4fa, #cba6f7, #313244, #1e1e2e, #313244, #cdd6f4, #6c7086, #89b4fa
+    disabled_colors=#6c7086, #313244, #585b70, #45475a, #11111b, #181825, #6c7086, #ffffff, #6c7086, #181825, #1e1e2e, #11111b, #45475a, #a6adc8, #89b4fa, #cba6f7, #313244, #1e1e2e, #313244, #cdd6f4, #6c7086, #45475a
+  '';
+
+  # Shape of the Hyprland Qt Quick style used by hyprpolkitagent and the
+  # other hypr* dialogs. Roundness and border width both go 0-3.
+  xdg.configFile."hypr/application-style.conf".text = ''
+    roundness = 2
+    border_width = 1
+  '';
 
   home.pointerCursor = {
     enable = true;
