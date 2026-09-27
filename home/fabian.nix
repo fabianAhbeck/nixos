@@ -202,7 +202,7 @@
     };
   };
 
-  # Clipboard history, fed by the wl-paste watchers in hyprland.nix.
+  # Clipboard history, fed by the wl-paste watchers in hyprland.lua.
   home.packages = with pkgs; [
     cliphist
     wl-clipboard
