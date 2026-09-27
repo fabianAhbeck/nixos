@@ -162,7 +162,8 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 
 -- Claude Code scratchpad for this config repo. SUPER+C shows/hides it; the
 -- session keeps running while hidden. If it isn't running (first press, or
--- after /exit), the press launches it.
+-- after /exit), the press launches it and resumes the repo's most recent
+-- conversation, or starts a new one if there is none.
 local claude_class = "claude-nixos"
 hl.bind(key("C"), function()
   if #hl.get_windows({ class = claude_class }) == 0 then
@@ -170,7 +171,8 @@ hl.bind(key("C"), function()
       hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
     end
     hl.exec_cmd(terminal .. " --class " .. claude_class
-      .. " --directory /home/fabian/Projects/nixos claude")
+      .. " --directory /home/fabian/Projects/nixos"
+      .. " sh -c 'claude --continue || claude'")
   else
     hl.dispatch(hl.dsp.workspace.toggle_special("claude"))
   end
