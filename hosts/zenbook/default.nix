@@ -41,11 +41,12 @@
     # Tiger Lake: enable GuC/HuC firmware loading for media offload.
     "i915.enable_guc=3"
 
-    # HIBERNATION -- fill this in after the first boot, see README.md:
+    # Hibernation: physical offset of /swap/swapfile inside cryptroot, from
     #   sudo btrfs inspect-internal map-swapfile -r /swap/swapfile
-    # "resume_offset=XXXXXXXX"
+    # Re-run and update this if the swapfile is ever recreated.
+    "resume_offset=533760"
   ];
-  # boot.resumeDevice = "/dev/mapper/cryptroot";
+  boot.resumeDevice = "/dev/mapper/cryptroot";
 
   ###########################################################################
   # Networking
