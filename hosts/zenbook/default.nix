@@ -84,6 +84,30 @@
   };
 
   console.keyMap = "sv-latin1";
+  # Catppuccin Mocha for the text console, i.e. the greeter and any tty.
+  # Order: black red green yellow blue magenta cyan white, then the bright
+  # variants. black/white double as the console background/foreground.
+  console.colors = [
+    "1e1e2e"
+    "f38ba8"
+    "a6e3a1"
+    "f9e2af"
+    "89b4fa"
+    "cba6f7"
+    "94e2d5"
+    "cdd6f4"
+    "585b70"
+    "f38ba8"
+    "a6e3a1"
+    "f9e2af"
+    "b4befe"
+    "f5c2e7"
+    "89dceb"
+    "a6adc8"
+  ];
+  # Terminus 12x24: the default 8x16 font is tiny on a 1080p panel.
+  console.font = "ter-v24n";
+  console.packages = [ pkgs.terminus_font ];
   # Wayland compositors read this; see also the `input` block in home/hyprland.nix.
   services.xserver.xkb = {
     layout = "se";

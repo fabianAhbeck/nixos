@@ -1,6 +1,11 @@
 # Hyprland session: compositor, greeter, portals, audio, graphics, fonts.
 # The per-user Hyprland *configuration* lives in home/hyprland.nix.
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   ###########################################################################
   # Compositor
@@ -26,8 +31,40 @@
     # crash instead of dropping to the greeter, and Hyprland warns at startup
     # without it. No --remember-session: there is only one session, and a
     # remembered one ("Hyprland") would override --cmd.
+    #
+    # Styled to match the desktop: the named colours below resolve through the
+    # Catppuccin Mocha console palette (console.colors in hosts/zenbook), so
+    # blue is the same #89b4fa as Waybar and the window borders. Preview a
+    # change without logging out with `tuigreet --mock <same flags>` in kitty.
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${config.programs.hyprland.package}/bin/start-hyprland";
+      command = lib.escapeShellArgs [
+        "${pkgs.tuigreet}/bin/tuigreet"
+        "--time"
+        "--time-format"
+        "%A %d %B  ·  %H:%M"
+        "--battery"
+        "--remember"
+        "--asterisks"
+        "--asterisks-char"
+        "•"
+        "--title"
+        "--custom-title"
+        " zenbook "
+        "--greeting"
+        "Welcome back"
+        "--width"
+        "52"
+        "--window-padding"
+        "2"
+        "--container-padding"
+        "2"
+        "--prompt-padding"
+        "1"
+        "--theme"
+        "border=blue;title=blue;text=gray;greet=magenta;prompt=blue;input=gray;time=magenta;action=blue;button=magenta;container=black"
+        "--cmd"
+        "${config.programs.hyprland.package}/bin/start-hyprland"
+      ];
       user = "greeter";
     };
   };
