@@ -36,6 +36,20 @@
       read -rsn1
     '')
 
+    # `wallpaper <image>` sets the wallpaper; awww-daemon remembers it and
+    # restores it at every login. `wallpaper --init` (run at Hyprland start)
+    # sets a default only if nothing has ever been set.
+    (pkgs.writeShellScriptBin "wallpaper" ''
+      for _ in $(seq 50); do awww query >/dev/null 2>&1 && break; sleep 0.1; done
+      if [ "$1" = "--init" ]; then
+        # awww writes one cache file per monitor once an image has been set.
+        cache="''${XDG_CACHE_HOME:-$HOME/.cache}/awww"
+        [ -n "$(find "$cache" -type f -print -quit 2>/dev/null)" ] && exit 0
+        set -- ${pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath}
+      fi
+      exec awww img --transition-type fade "$1"
+    '')
+
     (pkgs.writeShellScriptBin "powermenu" ''
       choice=$(printf '%s\n' \
         "󰌾  Lock" "󰍃  Log out" "󰤄  Suspend" "󰒲  Hibernate" "󰜉  Reboot" "󰐥  Shut down" \
@@ -50,7 +64,4 @@
       esac
     '')
   ];
-
-  # A wallpaper is not set by default; drop a file at ~/Pictures/wallpaper.png
-  # and set it with:  awww img ~/Pictures/wallpaper.png
 }

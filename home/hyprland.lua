@@ -32,6 +32,7 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 hl.on("hyprland.start", function()
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
   hl.exec_cmd("awww-daemon")
+  hl.exec_cmd("wallpaper --init") -- default image on first login only
   hl.exec_cmd("nm-applet --indicator")
   hl.exec_cmd("blueman-applet")
   -- Clipboard history for both text and images.

@@ -131,7 +131,7 @@ Then, in rough priority:
 2. Move the repo from `/tmp/nixos` to `/home/fabian/Projects/nixos`, the path
    `NH_FLAKE` expects.
 3. `resume_offset` for hibernation (below).
-4. A wallpaper (below).
+4. Optionally, a wallpaper (below).
 
 ### The untracked-file gotcha
 
@@ -176,11 +176,13 @@ Rebuild, reboot, then test with `systemctl hibernate`.
 
 ### Wallpaper
 
-`awww-daemon` runs but starts blank. Drop an image and set it:
+The first login gets the NixOS "nineish dark gray" wallpaper. To change it:
 
 ```sh
-awww img ~/Pictures/wallpaper.png
+wallpaper ~/Pictures/wallpaper.png
 ```
+
+`awww-daemon` remembers the last image and restores it at every login.
 
 (`swww` was renamed to `awww` upstream; the daemon binary is `awww-daemon`.)
 
