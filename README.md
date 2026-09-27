@@ -26,7 +26,7 @@ hosts/zenbook/
   hardware-configuration.nix   REGENERATE during install (see below)
 modules/
   nix.nix                 nix daemon, GC, caches, allowUnfree
-  desktop.nix             Hyprland, greetd, portals, pipewire, graphics, fonts
+  desktop.nix             Hyprland, ly greeter, portals, pipewire, graphics, fonts
   dev.nix                 Go, Rust, Node, Python, k8s, tofu, claude-code, CLI
   apps.nix                Firefox, Thunderbird, Discord, VLC, VS Code, Steam
   virtualisation.nix      libvirt/virt-manager, podman
@@ -114,14 +114,14 @@ Pull the stick as it reboots.
 ### Two things that will bite you
 
 - **`passwd fabian` is mandatory.** The config defines the user with no
-  password. Skip this and greetd will refuse the login, and fixing it means
+  password. Skip this and the greeter will refuse the login, and fixing it means
   booting the ISO again.
 - **The LUKS passphrase has no recovery.** Forget it and the disk is gone.
 
 ### First login
 
-tuigreet, then Hyprland. `SUPER+Return` for a terminal, `SUPER+D` for the
-launcher, `SUPER+Q` closes a window, `SUPER+SHIFT+Q` exits the session. The
+the ly greeter, then Hyprland. `SUPER+Return` for a terminal, `SUPER+D` for the
+launcher, `SUPER+Q` closes a window, `SUPER+SHIFT+Q` opens the power menu. The
 full bind list is in `home/hyprland.nix`.
 
 Then, in rough priority:

@@ -2,7 +2,6 @@
 # The per-user Hyprland *configuration* lives in home/hyprland.nix.
 {
   config,
-  lib,
   pkgs,
   ...
 }:
@@ -19,53 +18,39 @@
     withUWSM = false;
   };
 
-  # Login manager. tuigreet is a text greeter -- it starts in ~0.2s and does
-  # not drag in a second GTK stack just to type a password.
-  services.greetd = {
-    enable = true;
-    # Sets up the tty handling (Type=idle, TTYReset, output to tty1) so the
-    # greeter doesn't fight the boot log for the console. Don't hand-roll this
-    # in systemd.services.greetd -- it collides with the module.
-    useTextGreeter = true;
-    # start-hyprland is Hyprland's launcher: it restarts the compositor after a
-    # crash instead of dropping to the greeter, and Hyprland warns at startup
-    # without it. No --remember-session: there is only one session, and a
-    # remembered one ("Hyprland") would override --cmd.
-    #
-    # Styled to match the desktop: the named colours below resolve through the
-    # Catppuccin Mocha console palette (console.colors in hosts/zenbook), so
-    # blue is the same #89b4fa as Waybar and the window borders. Preview a
-    # change without logging out with `tuigreet --mock <same flags>` in kitty.
-    settings.default_session = {
-      command = lib.escapeShellArgs [
-        "${pkgs.tuigreet}/bin/tuigreet"
-        "--time"
-        "--time-format"
-        "%A %d %B  ·  %H:%M"
-        "--battery"
-        "--remember"
-        "--asterisks"
-        "--asterisks-char"
-        "•"
-        "--title"
-        "--custom-title"
-        " zenbook "
-        "--greeting"
-        "Welcome back"
-        "--width"
-        "52"
-        "--window-padding"
-        "2"
-        "--container-padding"
-        "2"
-        "--prompt-padding"
-        "1"
-        "--theme"
-        "border=blue;title=blue;text=gray;greet=magenta;prompt=blue;input=gray;time=magenta;action=blue;button=magenta;container=black"
-        "--cmd"
-        "${config.programs.hyprland.package}/bin/start-hyprland"
-      ];
-      user = "greeter";
+  # Login manager: ly, a text greeter on tty1 with an animated background.
+  # colormix slowly blends Catppuccin blue and mauve into the base colour
+  # behind a login box styled like the rest of the desktop. Colours are
+  # 0xSSRRGGBB, SS being styling (01 = bold). The Hyprland session entry
+  # already launches start-hyprland. Logs: /var/log/ly.log.
+  services.displayManager = {
+    defaultSession = "hyprland";
+    ly = {
+      enable = true;
+      x11Support = false;
+      settings = {
+        animation = "colormix";
+        colormix_col1 = "0x0089B4FA"; # blue
+        colormix_col2 = "0x00CBA6F7"; # mauve
+        colormix_col3 = "0x001E1E2E"; # base
+        animation_frame_delay = 33; # ~30 fps; the default 5 ms is 200 fps
+        # Freeze the animation after 10 min so an idle greeter doesn't burn
+        # battery.
+        animation_timeout_sec = 600;
+
+        bg = "0x001E1E2E";
+        fg = "0x00CDD6F4";
+        border_fg = "0x0089B4FA";
+        error_fg = "0x01F38BA8";
+        box_title = "zenbook";
+        clock = "%A %d %B  ·  %H:%M";
+        battery_id = "BAT0";
+        asterisk = "0x2022"; # •
+        default_input = "password"; # the username is remembered
+
+        sleep_cmd = "/run/current-system/systemd/bin/systemctl suspend";
+        hibernate_cmd = "/run/current-system/systemd/bin/systemctl hibernate";
+      };
     };
   };
 
@@ -135,7 +120,6 @@
   ###########################################################################
 
   services.gnome.gnome-keyring.enable = true; # VS Code, Thunderbird, nm-applet
-  security.pam.services.greetd.enableGnomeKeyring = true;
 
   # brightnessctl ships the udev rules that let members of `video` write to
   # the backlight without root.
