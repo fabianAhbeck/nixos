@@ -14,7 +14,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
 | `SUPER + C` | Show/hide Claude Code in this repo (resumes the last conversation) |
-| `SUPER + SHIFT + C` | Rebuild the system in a popup (asks for the sudo password at the end) |
+| `SUPER + SHIFT + C` | Rebuild the system in the background; a notification tracks it and a password dialog appears when the build is done |
 
 ## Windows
 
