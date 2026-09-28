@@ -29,6 +29,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + T` | Switch split direction (side by side / stacked) |
 | `SUPER + arrows` or `SUPER + H/J/K/L` | Move focus (vim keys: left/down/up/right) |
 | `SUPER + SHIFT + arrows` or `SUPER + SHIFT + H/J/K/L` | Move window |
+| `SUPER + +` / `SUPER + -` | Scale the whole screen up / down (1.0 … 2.0, default 1.25) |
 | `SUPER + left-drag` | Move window with the mouse |
 | `SUPER + right-drag` | Resize window with the mouse |
 

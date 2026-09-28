@@ -243,6 +243,45 @@ hl.on("window.open", function(w)
   end, { timeout = 1, type = "oneshot" })
 end)
 
+-- SUPER + plus / minus: step the panel scale through values that divide
+-- 1920x1080 evenly (so text stays sharp), with a swayosd popup. Floating
+-- Claude windows keep their pixel size across a scale change, so they are
+-- resized to their usual 70% x 75% and re-centred. A config reload goes
+-- back to the scale set in hl.monitor above.
+local panel_scales = { 1, 1.2, 1.25, 4 / 3, 1.5, 1.6, 2 }
+
+local function fit_claude_windows()
+  local m = hl.get_monitor("eDP-1")
+  if not m then return end
+  local w_ = math.floor(m.width / m.scale * 0.7)
+  local h_ = math.floor(m.height / m.scale * 0.75)
+  for _, sess in pairs(claude_sessions) do
+    for _, w in ipairs(hl.get_windows({ class = sess.class })) do
+      hl.dispatch(hl.dsp.window.resize({ x = w_, y = h_, exact = true, window = w }))
+      hl.dispatch(hl.dsp.window.center({ window = w }))
+    end
+  end
+end
+
+local function step_scale(dir)
+  local m = hl.get_monitor("eDP-1")
+  if not m then return end
+  -- Index of the listed scale closest to the current one.
+  local i, best = 1, math.huge
+  for n, s in ipairs(panel_scales) do
+    if math.abs(s - m.scale) < best then i, best = n, math.abs(s - m.scale) end
+  end
+  local new = panel_scales[math.max(1, math.min(#panel_scales, i + dir))]
+  if new == panel_scales[i] and best < 0.01 then return end
+  hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = new })
+  hl.timer(fit_claude_windows, { timeout = 100, type = "oneshot" })
+  hl.exec_cmd(string.format(
+    "swayosd-client --custom-message 'Scale %.2f' --custom-icon zoom-in-symbolic", new))
+end
+
+hl.bind(key("plus"), function() step_scale(1) end)
+hl.bind(key("minus"), function() step_scale(-1) end)
+
 hl.bind(key("mouse_down"), hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(key("mouse_up"), hl.dsp.focus({ workspace = "e-1" }))
 
