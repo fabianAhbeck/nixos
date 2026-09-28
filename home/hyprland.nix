@@ -21,7 +21,7 @@
   # Lock / logout / suspend / hibernate / reboot / shut down, as a wofi list.
   # Bound to SUPER+SHIFT+Q and the power button in Waybar.
   home.packages = [
-    # SUPER+SHIFT+C: rebuild in the background. A notification tracks it;
+    # SUPER+SHIFT+R: rebuild in the background. A notification tracks it;
     # the root step goes through pkexec, so the polkit agent shows a
     # graphical password dialog once the build is done. On failure the
     # notification offers the log. One run at a time.

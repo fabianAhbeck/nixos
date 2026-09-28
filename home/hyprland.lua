@@ -134,7 +134,7 @@ hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy
 
 -- Rebuild the system in the background, tracked by a notification (see
 -- rebuild-bg in home/hyprland.nix).
-hl.bind(shift("C"), exec("rebuild-bg"))
+hl.bind(shift("R"), exec("rebuild-bg"))
 
 -- Window management
 hl.bind(key("Q"), hl.dsp.window.close())
@@ -172,7 +172,7 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 -- Claude Code scratchpads, one per repo, each on its own special workspace
 -- and each resuming that repo's most recent conversation (or starting a
 -- new one). SUPER+C toggles the session used last (nixos after a config
--- reload); SUPER+ALT+C opens a picker (claude-pick in home/hyprland.nix) to
+-- reload); SUPER+SHIFT+C opens a picker (claude-pick in home/hyprland.nix) to
 -- switch, and the pick becomes the new "last". Sessions keep running while
 -- hidden, and both can run at once. The nixos pane keeps its original
 -- workspace name, "claude".
@@ -217,7 +217,7 @@ hl.bind(key("C"), function()
     hl.dispatch(claude_show(claude_last))
   end
 end)
-hl.bind(mod .. " + ALT + C", exec("claude-pick"))
+hl.bind(shift("C"), exec("claude-pick"))
 
 -- New windows open on the focused workspace, which is a Claude pane while
 -- one is shown. Keep the panes for their Claude window only: send anything
