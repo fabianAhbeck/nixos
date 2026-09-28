@@ -22,7 +22,10 @@ hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
 -- Monitors -- the UX425EA panel is 1920x1080. `hyprctl monitors` after
 -- first boot if you attach anything external.
 ---------------------------------------------------------------------------
-hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1 })
+-- Scale 1.25: everything 25% larger at full resolution (a 1536x864 logical
+-- desktop). Floating windows opened at another scale keep their old pixel
+-- size, so reopen or resize them after changing this.
+hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1.25 })
 -- Any external display, to the right, unscaled.
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
