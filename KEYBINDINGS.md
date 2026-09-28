@@ -12,6 +12,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + D` | App launcher (wofi) |
 | `SUPER + W` | Firefox |
 | `SUPER + E` | File manager (Nautilus) |
+| `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
 | `SUPER + C` | Claude Code: hide the pane that is showing, or pick a session (nixos / dotfiles) to show. Each resumes its repo's last conversation; ● = running |
 | `SUPER + SHIFT + C` | Rebuild the system in the background; a notification tracks it and a password dialog appears when the build is done |

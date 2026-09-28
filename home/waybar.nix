@@ -97,7 +97,8 @@
         format-ethernet = "󰈀 {ifname}";
         format-disconnected = "󰖪";
         tooltip-format-wifi = "{essid} ({signalStrength}%)\n{ipaddr}";
-        on-click = "kitty -e nmtui";
+        on-click = "networkmanager_dmenu";
+        on-click-right = "nm-connection-editor";
       };
 
       bluetooth = {

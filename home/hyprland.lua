@@ -129,6 +129,7 @@ hl.bind(key("Return"), exec(terminal))
 hl.bind(key("D"), exec(menu))
 hl.bind(key("W"), exec(browser))
 hl.bind(key("E"), exec("nautilus"))
+hl.bind(key("N"), exec("networkmanager_dmenu")) -- Wi-Fi / VPN menu
 hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
 
 -- Rebuild the system in the background, tracked by a notification (see

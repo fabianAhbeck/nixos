@@ -141,7 +141,63 @@ in
       width = 600;
       lines = 10;
     };
+    # Catppuccin Mocha, shared by every wofi menu: launcher, power menu,
+    # Claude picker, Wi-Fi menu.
+    style = ''
+      window {
+        margin: 0;
+        border: 2px solid #89b4fa;
+        border-radius: 10px;
+        background-color: #1e1e2e;
+        font-family: "Inter", "JetBrainsMono Nerd Font";
+        font-size: 13px;
+      }
+      #outer-box { margin: 0; padding: 8px; border: none; }
+      #input {
+        margin: 0 0 8px 0;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        background-color: #313244;
+        color: #cdd6f4;
+        box-shadow: none;
+      }
+      #input:focus { border: none; box-shadow: none; }
+      #inner-box, #scroll { margin: 0; border: none; background-color: transparent; }
+      #entry { padding: 5px 8px; border-radius: 6px; }
+      #entry:selected { background-color: #45475a; outline: none; }
+      #text { color: #cdd6f4; }
+      #entry:selected #text { color: #89b4fa; font-weight: bold; }
+    '';
   };
+
+  # Wi-Fi / VPN menu in wofi (Waybar network click, SUPER+N). Replaces
+  # nmtui in a terminal; nm-connection-editor is still there for details.
+  # The package is in home.packages below.
+  xdg.configFile."networkmanager-dmenu/config.ini".text = ''
+    [dmenu]
+    dmenu_command = wofi --dmenu --insensitive --width 420 --lines 12 --cache-file /dev/null
+    highlight = True
+    highlight_fg = #89b4fa
+    highlight_bg = #313244
+    highlight_bold = True
+    compact = True
+    wifi_chars = ▂▄▆█
+    format = {bars}  {name:<{max_len_name}}  {sec}
+    list_saved = False
+    prompt = Wi-Fi
+
+    [dmenu_passphrase]
+    obscure = True
+
+    [editor]
+    terminal = kitty
+    gui_if_available = True
+    gui = nm-connection-editor
+
+    [nmdm]
+    rescan_delay = 3
+  '';
 
   programs.hyprlock = {
     enable = true;
@@ -220,6 +276,7 @@ in
     wl-clipboard
     awww # wallpaper daemon (formerly swww)
     networkmanagerapplet
+    networkmanager_dmenu
   ];
 
   ###########################################################################
