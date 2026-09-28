@@ -11,7 +11,8 @@
   # Clicking again closes it, as does clicking elsewhere. A Claude pane that
   # is showing gets hidden first: the guard that moves new windows off it
   # (hyprland.lua) shifts focus, and gsimplecal closes as soon as it loses
-  # focus. GDK_DPI_SCALE makes the calendar bigger.
+  # focus. It runs with its own GTK theme (below), so other GTK apps keep
+  # plain Adwaita-dark.
   home.packages = [
     pkgs.gsimplecal
     (pkgs.writeShellScriptBin "calendar-popup" ''
@@ -22,9 +23,47 @@
       case "$shown" in
         special:claude*) hyprctl dispatch "hl.dsp.workspace.toggle_special(\"''${shown#special:}\")" >/dev/null ;;
       esac
-      GDK_DPI_SCALE=1.4 exec gsimplecal
+      GTK_THEME=gsimplecal-catppuccin exec gsimplecal
     '')
   ];
+  # Catppuccin Mocha on top of Adwaita-dark, sized to match the bar: mauve
+  # month/year, blue arrows, weekdays and week numbers, today as a blue pill.
+  xdg.dataFile."themes/gsimplecal-catppuccin/gtk-3.0/gtk.css".text = ''
+    @import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");
+
+    window, .background {
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+    }
+    calendar, calendar.view {
+      font-family: "Inter";
+      font-size: 10pt;
+      padding: 1px 3px; /* per day cell */
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+      border: none;
+    }
+    calendar.header {
+      background-color: transparent;
+      border: none;
+      color: #cba6f7;
+      font-weight: bold;
+    }
+    calendar.button { color: #89b4fa; }
+    calendar.button:hover { color: #b4befe; }
+    calendar.highlight {
+      background-color: transparent;
+      color: #89b4fa;
+      font-weight: bold;
+    }
+    calendar:indeterminate { color: #585b70; }
+    calendar:selected {
+      background-color: #89b4fa;
+      color: #1e1e2e;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+  '';
   xdg.configFile."gsimplecal/config".text = ''
     show_calendar = 1
     show_timezones = 0
