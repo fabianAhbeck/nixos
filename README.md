@@ -19,23 +19,42 @@ warnings. It has not been *built* or booted; expect the first
 ## Layout
 
 ```
-flake.nix                 inputs (nixpkgs unstable, home-manager, disko, nixos-hardware)
-hosts/zenbook/
-  default.nix             boot, networking, locale, users, power
+flake.nix                 inputs; mkHost builds each machine from modules/ + hosts/<name>/
+hosts/zenbook/            everything specific to this laptop:
+  default.nix             my.* values, Intel GPU, hibernation, TLP/battery/lid, home VPN
   disko.nix               declarative partitioning — LUKS + btrfs subvolumes
   hardware-configuration.nix   REGENERATE during install (see below)
-modules/
-  nix.nix                 nix daemon, GC, caches, allowUnfree
-  desktop.nix             Hyprland, greetd, portals, pipewire, graphics, fonts
+modules/                  shared by every machine (default.nix imports them all)
+  host.nix                my.* options: monitors, backlight, laptop, CPU temp sensor, repo paths
+  common.nix              boot, networking, locale + console, user, sudo, Home Manager
+  nix.nix                 nix daemon, nh + cleanup, caches, allowUnfree
+  desktop.nix             Hyprland, greeter, portals, pipewire, graphics, fonts
   dev.nix                 Go, Rust, Node, Python, k8s, tofu, claude-code, CLI
   apps.nix                Firefox, Thunderbird, Discord, VLC, VS Code, Steam
   virtualisation.nix      libvirt/virt-manager, podman
-home/
+home/                     Home Manager; reads my.* as osConfig.my
   fabian.nix              git, kitty, neovim, mako, wofi, hyprlock, hypridle, theming
-  hyprland.nix            compositor config and key bindings
+  hyprland.nix/.lua       compositor config and key bindings (gets a `host` table from my.*)
   waybar.nix              status bar
   shell.nix               zsh, starship, fzf, tmux, aliases
 ```
+
+### Adding a machine
+
+1. `hosts/<name>/default.nix` with `networking.hostName`, `system.stateVersion`,
+   the hardware bits (GPU drivers, nixos-hardware profiles, power) and the
+   `my.*` settings: `monitors` (from `hyprctl monitors`), `backlight` (null on
+   a desktop), `laptop`, `cpuTempSensor`. `hosts/zenbook/default.nix` is the
+   worked example.
+2. `hosts/<name>/disko.nix` and `hardware-configuration.nix`, generated on the
+   machine as in the install steps below — and `git add` them.
+3. One line in `flake.nix`: `nixosConfigurations.<name> = mkHost "<name>";`
+
+Notes for the desktop (NVIDIA, ultrawide), for when it moves over:
+`hardware.nvidia` with the open kernel module and `services.xserver.videoDrivers
+= [ "nvidia" ]`, `my.monitors` with the ultrawide's mode and refresh rate (its
+scale steps come out as 1 / 1.25 / 1.33 / 1.6 / 2), and none of zenbook's
+laptop power, hibernation or VPN settings.
 
 ## Installing
 

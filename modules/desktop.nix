@@ -88,19 +88,13 @@
   };
 
   ###########################################################################
-  # Graphics -- Tiger Lake Iris Xe
+  # Graphics -- the GPU drivers themselves are per machine (hosts/<name>/)
   ###########################################################################
 
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # Steam / Wine
-    extraPackages = with pkgs; [
-      intel-media-driver # iHD VA-API driver, the right one for Gen11+
-      vpl-gpu-rt # QSV / oneVPL runtime for hardware encode
-      intel-compute-runtime # OpenCL
-    ];
   };
-  environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
   ###########################################################################
   # Audio
@@ -116,7 +110,8 @@
     wireplumber.enable = true;
   };
 
-  # The UX425EA's Tiger Lake SST codec needs the SOF firmware to produce sound.
+  # Redistributable and unfree firmware: Wi-Fi, GPUs, and audio DSPs (the
+  # zenbook's Tiger Lake SST codec needs SOF firmware to make any sound).
   hardware.enableAllFirmware = true;
 
   ###########################################################################

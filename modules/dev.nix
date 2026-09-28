@@ -26,11 +26,13 @@
     pnpm
     typescript-language-server
 
-    (python3.withPackages (ps: with ps; [
-      requests
-      pyyaml
-      virtualenv
-    ]))
+    (python3.withPackages (
+      ps: with ps; [
+        requests
+        pyyaml
+        virtualenv
+      ]
+    ))
     ruff
     uv
 

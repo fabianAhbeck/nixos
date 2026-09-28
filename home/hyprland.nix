@@ -1,5 +1,17 @@
-# Hyprland compositor configuration. The config itself is in ./hyprland.lua.
-{ pkgs, ... }:
+# Hyprland compositor configuration. The config itself is in ./hyprland.lua;
+# the per-machine values it needs (monitors, backlight, repo paths) come from
+# my.* (modules/host.nix) and are prepended as a Lua table called `host`.
+{
+  lib,
+  osConfig,
+  pkgs,
+  ...
+}:
+let
+  host = {
+    inherit (osConfig.my) monitors backlight repos;
+  };
+in
 {
   wayland.windowManager.hyprland = {
     enable = true;
@@ -15,7 +27,12 @@
     # on; hyprlang-style `settings` would be rendered as invalid Lua, so the
     # config lives in plain Lua instead.
     configType = "lua";
-    extraConfig = builtins.readFile ./hyprland.lua;
+    extraConfig = ''
+      -- Generated from my.* in the NixOS config (modules/host.nix).
+      local host = ${lib.generators.toLua { } host}
+
+    ''
+    + builtins.readFile ./hyprland.lua;
   };
 
   # Lock / logout / suspend / hibernate / reboot / shut down, as a wofi list.
@@ -37,7 +54,7 @@
 
       id=$(notify -p -t 0 "Rebuilding…" "You'll be asked for your password when the build is done.")
       start=$SECONDS
-      if ${pkgs.nh}/bin/nh os switch /home/fabian/Projects/nixos --no-nom \
+      if ${pkgs.nh}/bin/nh os switch ${osConfig.my.repos.nixos} --no-nom \
           --elevation-strategy /run/wrappers/bin/pkexec >"$log" 2>&1; then
         notify -r "$id" -t 8000 "Rebuild done" "Active after $((SECONDS - start))s."
       else

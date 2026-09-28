@@ -1,43 +1,57 @@
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
+# ASUS ZenBook UX425EA: i7-1165G7 (Tiger Lake), Iris Xe, 1080p panel.
+# Everything shared with other machines comes from ../../modules (added by
+# mkHost in flake.nix); this file is only what is specific to this laptop.
+{ inputs, pkgs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
     ./disko.nix
 
-    ../../modules/nix.nix
-    ../../modules/desktop.nix
-    ../../modules/dev.nix
-    ../../modules/apps.nix
-    ../../modules/virtualisation.nix
+    # No nixos-hardware profile exists for the UX425EA specifically, so we
+    # compose the generic ones. asus-battery gives us the charge threshold.
+    inputs.nixos-hardware.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.nixosModules.common-pc-laptop
+    inputs.nixos-hardware.nixosModules.common-pc-laptop-ssd
+    inputs.nixos-hardware.nixosModules.asus-battery
   ];
 
-  ###########################################################################
-  # Boot
-  ###########################################################################
+  networking.hostName = "zenbook";
 
-  boot.loader.systemd-boot = {
-    enable = true;
-    # /boot is 1G; each generation costs a kernel + initrd (~150MB).
-    configurationLimit = 10;
-    editor = false; # don't let anyone with the laptop append init=/bin/sh
+  my = {
+    monitors = [
+      # Scale 1.25: everything 25% larger at full resolution (a 1536x864
+      # logical desktop). SUPER + plus/minus changes it until the next reload.
+      {
+        output = "eDP-1";
+        mode = "1920x1080@60";
+        position = "0x0";
+        scale = 1.25;
+      }
+    ];
+    backlight = "intel_backlight";
+    laptop = true;
+    cpuTempSensor = "/sys/devices/platform/coretemp.0/hwmon"; # Tiger Lake package sensor
   };
-  boot.loader.efi.canTouchEfiVariables = true;
 
-  # systemd in the initrd: nicer LUKS passphrase prompt, plymouth handoff,
-  # and it is what TPM2 unlock needs if you add it later.
-  boot.initrd.systemd.enable = true;
+  # 8 threads on the i7-1165G7; leave two free during big rebuilds.
+  nix.settings.cores = 6;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  ###########################################################################
+  # Graphics -- Tiger Lake Iris Xe
+  ###########################################################################
 
-  boot.plymouth.enable = true;
+  hardware.graphics.extraPackages = with pkgs; [
+    intel-media-driver # iHD VA-API driver, the right one for Gen11+
+    vpl-gpu-rt # QSV / oneVPL runtime for hardware encode
+    intel-compute-runtime # OpenCL
+  ];
+  environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
+
+  ###########################################################################
+  # Boot: GPU firmware and hibernation
+  ###########################################################################
+
   boot.kernelParams = [
-    "quiet"
-    "splash"
     # Tiger Lake: enable GuC/HuC firmware loading for media offload.
     "i915.enable_guc=3"
 
@@ -49,19 +63,16 @@
   boot.resumeDevice = "/dev/mapper/cryptroot";
 
   ###########################################################################
-  # Networking
+  # Home VPN
   ###########################################################################
 
-  networking.hostName = "zenbook";
   networking.networkmanager = {
-    enable = true;
-    wifi.backend = "iwd"; # noticeably better roaming than wpa_supplicant on AX201
     plugins = [ pkgs.networkmanager-openvpn ];
 
-    # Home VPN: whenever a network comes up, connect `home-vpn` unless we're
-    # on the home Wi-Fi, where it's disconnected instead. The connection
-    # itself (with its keys and password) is imported into NetworkManager,
-    # not kept in this repo; see "Home VPN" in README.md.
+    # Whenever a network comes up, connect `home-vpn` unless we're on the
+    # home Wi-Fi, where it's disconnected instead. The connection itself
+    # (with its keys and password) is imported into NetworkManager, not kept
+    # in this repo; see "Home VPN" in README.md.
     dispatcherScripts = [
       {
         type = "basic";
@@ -100,88 +111,6 @@
     ];
   };
 
-  networking.firewall = {
-    enable = true;
-    allowedTCPPorts = [ ];
-    allowedUDPPorts = [ ];
-  };
-
-  ###########################################################################
-  # Locale -- mirrors the current Ubuntu setup: Swedish keyboard, English UI,
-  # Swedish formats for dates/currency/paper size.
-  ###########################################################################
-
-  time.timeZone = "Europe/Stockholm";
-
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "sv_SE.UTF-8";
-    LC_MEASUREMENT = "sv_SE.UTF-8";
-    LC_MONETARY = "sv_SE.UTF-8";
-    LC_NAME = "sv_SE.UTF-8";
-    LC_NUMERIC = "sv_SE.UTF-8";
-    LC_PAPER = "sv_SE.UTF-8";
-    LC_TELEPHONE = "sv_SE.UTF-8";
-    LC_TIME = "sv_SE.UTF-8";
-  };
-
-  console.keyMap = "sv-latin1";
-  # Catppuccin Mocha for the text console, i.e. the greeter and any tty.
-  # Order: black red green yellow blue magenta cyan white, then the bright
-  # variants. black/white double as the console background/foreground.
-  console.colors = [
-    "1e1e2e"
-    "f38ba8"
-    "a6e3a1"
-    "f9e2af"
-    "89b4fa"
-    "cba6f7"
-    "94e2d5"
-    "cdd6f4"
-    "585b70"
-    "f38ba8"
-    "a6e3a1"
-    "f9e2af"
-    "b4befe"
-    "f5c2e7"
-    "89dceb"
-    "a6adc8"
-  ];
-  # Terminus 12x24: the default 8x16 font is tiny on a 1080p panel.
-  console.font = "ter-v24n";
-  console.packages = [ pkgs.terminus_font ];
-  # Wayland compositors read this; see also the `input` block in home/hyprland.nix.
-  services.xserver.xkb = {
-    layout = "se";
-    variant = "";
-  };
-
-  ###########################################################################
-  # Users
-  ###########################################################################
-
-  users.users.fabian = {
-    isNormalUser = true;
-    description = "Fabian Åhbeck";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "video"
-      "audio"
-      "libvirtd"
-      "docker"
-      "dialout" # serial consoles / flashing boards
-    ];
-    shell = pkgs.zsh;
-    # Set with `passwd` on first boot, or seed a hashed password here:
-    # hashedPassword = "$6$...";
-  };
-
-  # Ask for a password on sudo, but don't re-ask constantly in a shell session.
-  security.sudo.extraConfig = ''
-    Defaults timestamp_timeout=30
-  '';
-
   ###########################################################################
   # Power / firmware -- laptop bits
   ###########################################################################
@@ -191,7 +120,6 @@
   hardware.asus.battery.chargeUpto = 80;
 
   services.thermald.enable = true;
-  services.fwupd.enable = true; # ASUS ships UX425EA firmware to LVFS
 
   # TLP rather than power-profiles-daemon: no GNOME here to drive PPD's
   # profile switching, and TLP's defaults are better on battery.
@@ -212,25 +140,12 @@
     };
   };
 
-  # Lid close and the power button both suspend; hibernate is opt-in via the
-  # power menu once resume_offset is set.
+  # Lid close and the power button both suspend; hibernate is in the power
+  # menu (SUPER+SHIFT+Q).
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "suspend";
     HandlePowerKey = "suspend";
-  };
-
-  ###########################################################################
-  # Home Manager
-  ###########################################################################
-
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    extraSpecialArgs = { inherit inputs; };
-    users.fabian = import ../../home/fabian.nix;
-    # Rename rather than fail when HM wants to take over a file that already exists.
-    backupFileExtension = "hm-bak";
   };
 
   ###########################################################################

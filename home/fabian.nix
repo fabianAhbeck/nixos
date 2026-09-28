@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  osConfig,
+  pkgs,
+  ...
+}:
 let
   qtctAppearance = {
     custom_palette = true;
@@ -108,7 +113,7 @@ in
   # lazy.nvim can still write lazy-lock.json. Mason's downloaded servers run
   # thanks to programs.nix-ld (modules/dev.nix).
   xdg.configFile."nvim".source =
-    config.lib.file.mkOutOfStoreSymlink "/home/fabian/Projects/dotfiles/.config/nvim";
+    config.lib.file.mkOutOfStoreSymlink "${osConfig.my.repos.dotfiles}/.config/nvim";
 
   ###########################################################################
   # Notifications, launcher, lock, idle

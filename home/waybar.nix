@@ -1,5 +1,11 @@
-# Status bar.
-{ pkgs, lib, ... }:
+# Status bar. Battery and the CPU temperature sensor follow my.laptop and
+# my.cpuTempSensor (modules/host.nix).
+{
+  lib,
+  osConfig,
+  pkgs,
+  ...
+}:
 {
   programs.waybar = {
     enable = true;
@@ -28,7 +34,9 @@
         "cpu"
         "memory"
         "temperature"
-        "battery"
+      ]
+      ++ lib.optional osConfig.my.laptop "battery"
+      ++ [
         "custom/power"
       ];
 
@@ -64,12 +72,13 @@
       };
 
       temperature = {
-        # Tiger Lake package sensor.
-        hwmon-path-abs = "/sys/devices/platform/coretemp.0/hwmon";
-        input-filename = "temp1_input";
         critical-threshold = 85;
         format = " {temperatureC}°C";
         format-critical = " {temperatureC}°C";
+      }
+      // lib.optionalAttrs (osConfig.my.cpuTempSensor != null) {
+        hwmon-path-abs = osConfig.my.cpuTempSensor;
+        input-filename = "temp1_input";
       };
 
       battery = {

@@ -1,5 +1,6 @@
 # Nix daemon settings, garbage collection, and the unfree policy.
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -13,10 +14,9 @@
         "flakes"
       ];
 
-      # 8 threads on the i7-1165G7. Leaving max-jobs at auto and capping cores
-      # keeps the laptop usable during a big rebuild.
+      # Build cores are capped per machine (hosts/<name>/) so it stays usable
+      # during a big rebuild.
       max-jobs = "auto";
-      cores = 6;
 
       # Nothing here should ever build glibc from source.
       substituters = [
@@ -68,7 +68,7 @@
   # always keeping the last few.
   programs.nh = {
     enable = true;
-    flake = "/home/fabian/Projects/nixos";
+    flake = config.my.repos.nixos;
     clean = {
       enable = true;
       dates = "weekly";

@@ -5,6 +5,10 @@
 -- Keyboard layout is Swedish, matching the current install. SUPER is the mod
 -- key. Workspaces 1-10 on SUPER+<n>, move window with SUPER+SHIFT+<n>.
 --
+-- `host` (monitors, backlight, repo paths) is defined above this file by
+-- hyprland.nix from my.* in the NixOS config, so this file only verifies as
+-- part of the generated config.
+--
 -- API reference: the `hl` stubs next to this Hyprland build, see
 -- ~/.config/hypr/.luarc.json. Check changes with:
 --   Hyprland --verify-config -c ~/.config/hypr/hyprland.lua
@@ -19,14 +23,15 @@ local browser  = "firefox"
 hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
 
 ---------------------------------------------------------------------------
--- Monitors -- the UX425EA panel is 1920x1080. `hyprctl monitors` after
--- first boot if you attach anything external.
+-- Monitors -- set per machine in my.monitors (hosts/<name>/default.nix).
+-- `hyprctl monitors` lists names and modes. Floating windows opened at
+-- another scale keep their old pixel size, so reopen or resize them after
+-- changing a scale.
 ---------------------------------------------------------------------------
--- Scale 1.25: everything 25% larger at full resolution (a 1536x864 logical
--- desktop). Floating windows opened at another scale keep their old pixel
--- size, so reopen or resize them after changing this.
-hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1.25 })
--- Any external display, to the right, unscaled.
+for _, spec in ipairs(host.monitors) do
+  hl.monitor(spec)
+end
+-- Any other display: preferred mode, placed automatically, unscaled.
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
 ---------------------------------------------------------------------------
@@ -180,8 +185,8 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 -- hidden, and both can run at once. The nixos pane keeps its original
 -- workspace name, "claude".
 local claude_sessions = {
-  nixos    = { class = "claude-nixos",    ws = "claude",          dir = "/home/fabian/Projects/nixos" },
-  dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = "/home/fabian/Projects/dotfiles" },
+  nixos    = { class = "claude-nixos",    ws = "claude",          dir = host.repos.nixos },
+  dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = host.repos.dotfiles },
 }
 
 local claude_last = "nixos"
@@ -243,15 +248,38 @@ hl.on("window.open", function(w)
   end, { timeout = 1, type = "oneshot" })
 end)
 
--- SUPER + plus / minus: step the panel scale through values that divide
--- 1920x1080 evenly (so text stays sharp), with a swayosd popup. Floating
--- Claude windows keep their pixel size across a scale change, so they are
--- resized to their usual 70% x 75% and re-centred. A config reload goes
--- back to the scale set in hl.monitor above.
-local panel_scales = { 1, 1.2, 1.25, 4 / 3, 1.5, 1.6, 2 }
+-- SUPER + plus / minus: step the focused monitor's scale through values
+-- that divide its resolution evenly (so text stays sharp), with a swayosd
+-- popup. Floating Claude windows keep their pixel size across a scale
+-- change, so they are resized to their usual 70% x 75% and re-centred. A
+-- config reload goes back to the scales in host.monitors.
+local scale_candidates = { 1, 1.2, 1.25, 4 / 3, 1.5, 1.6, 2 }
+
+local function clean_scales(width, height)
+  local out = {}
+  for _, s in ipairs(scale_candidates) do
+    local lw, lh = width / s, height / s
+    if math.abs(lw - math.floor(lw + 0.5)) < 0.01 and math.abs(lh - math.floor(lh + 0.5)) < 0.01 then
+      out[#out + 1] = s
+    end
+  end
+  return out
+end
+
+-- The monitor's spec from host.monitors, or one built from its current mode.
+local function monitor_spec(m)
+  for _, spec in ipairs(host.monitors) do
+    if spec.output == m.name then return spec end
+  end
+  return {
+    output = m.name,
+    mode = string.format("%dx%d@%.3f", m.width, m.height, m.refresh_rate),
+    position = string.format("%dx%d", m.x, m.y),
+  }
+end
 
 local function fit_claude_windows()
-  local m = hl.get_monitor("eDP-1")
+  local m = hl.get_active_monitor()
   if not m then return end
   local w_ = math.floor(m.width / m.scale * 0.7)
   local h_ = math.floor(m.height / m.scale * 0.75)
@@ -264,16 +292,18 @@ local function fit_claude_windows()
 end
 
 local function step_scale(dir)
-  local m = hl.get_monitor("eDP-1")
+  local m = hl.get_active_monitor()
   if not m then return end
+  local scales = clean_scales(m.width, m.height)
   -- Index of the listed scale closest to the current one.
   local i, best = 1, math.huge
-  for n, s in ipairs(panel_scales) do
+  for n, s in ipairs(scales) do
     if math.abs(s - m.scale) < best then i, best = n, math.abs(s - m.scale) end
   end
-  local new = panel_scales[math.max(1, math.min(#panel_scales, i + dir))]
-  if new == panel_scales[i] and best < 0.01 then return end
-  hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = new })
+  local new = scales[math.max(1, math.min(#scales, i + dir))]
+  if new == scales[i] and best < 0.01 then return end
+  local spec = monitor_spec(m)
+  hl.monitor({ output = spec.output, mode = spec.mode, position = spec.position, scale = new })
   hl.timer(fit_claude_windows, { timeout = 100, type = "oneshot" })
   hl.exec_cmd(string.format(
     "swayosd-client --custom-message 'Scale %.2f' --custom-icon zoom-in-symbolic", new))
@@ -300,8 +330,9 @@ hl.bind(key("mouse:273"), hl.dsp.window.resize(), { mouse = true })
 local held = { locked = true, repeating = true }
 local locked = { locked = true }
 local osd = "swayosd-client "
--- Screen only; without --device it would also step the keyboard backlight.
-local screen = " --device intel_backlight"
+-- Screen only (host.backlight); without --device swayosd would also step
+-- e.g. a keyboard backlight.
+local screen = host.backlight and (" --device " .. host.backlight) or ""
 hl.bind("XF86AudioRaiseVolume", exec(osd .. "--output-volume +5 --max-volume 100"), held)
 hl.bind("XF86AudioLowerVolume", exec(osd .. "--output-volume -5"), held)
 hl.bind("XF86MonBrightnessUp", exec(osd .. "--brightness +5" .. screen), held)

@@ -1,5 +1,5 @@
 # Shell, prompt, and the small CLI conveniences that go with them.
-{ pkgs, ... }:
+{ osConfig, pkgs, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -21,7 +21,7 @@
       # `rebuild` itself is a script (see home.packages below).
       rebuild-boot = "nh os boot";
       rebuild-test = "nh os test";
-      update = "nix flake update --flake /home/fabian/Projects/nixos";
+      update = "nix flake update --flake ${osConfig.my.repos.nixos}";
       gc = "nh clean all --keep 5 --keep-since 30d";
 
       ls = "eza --group-directories-first";
@@ -138,7 +138,7 @@
   # shell, a keybinding, or a script. Extra args go straight to nh.
   home.packages = [
     (pkgs.writeShellScriptBin "rebuild" ''
-      exec ${pkgs.nh}/bin/nh os switch /home/fabian/Projects/nixos "$@"
+      exec ${pkgs.nh}/bin/nh os switch ${osConfig.my.repos.nixos} "$@"
     '')
   ];
 }
