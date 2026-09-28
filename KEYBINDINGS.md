@@ -14,7 +14,8 @@ them. `SUPER` is the Windows key.
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
-| `SUPER + C` | Claude Code: hide the pane that is showing, or pick a session (nixos / dotfiles) to show. Each resumes its repo's last conversation; ● = running |
+| `SUPER + C` | Show/hide Claude Code: the session you used last (nixos by default). Each resumes its repo's last conversation |
+| `SUPER + ALT + C` | Pick which Claude session to show (nixos / dotfiles; ● = running); SUPER + C then toggles that one |
 | `SUPER + SHIFT + C` | Rebuild the system in the background; a notification tracks it and a password dialog appears when the build is done |
 
 ## Windows

@@ -171,14 +171,17 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 
 -- Claude Code scratchpads, one per repo, each on its own special workspace
 -- and each resuming that repo's most recent conversation (or starting a
--- new one). SUPER+C hides whichever is showing; otherwise it opens a picker
--- (claude-pick in home/hyprland.nix) that calls claude_show(). Sessions keep
--- running while hidden, and both can run at once. The nixos pane keeps its
--- original workspace name, "claude".
+-- new one). SUPER+C toggles the session used last (nixos after a config
+-- reload); SUPER+ALT+C opens a picker (claude-pick in home/hyprland.nix) to
+-- switch, and the pick becomes the new "last". Sessions keep running while
+-- hidden, and both can run at once. The nixos pane keeps its original
+-- workspace name, "claude".
 local claude_sessions = {
   nixos    = { class = "claude-nixos",    ws = "claude",          dir = "/home/fabian/Projects/nixos" },
   dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = "/home/fabian/Projects/dotfiles" },
 }
+
+local claude_last = "nixos"
 
 -- The claude session whose pane is `ws_name` ("special:..."), if any.
 local function claude_session_on(ws_name)
@@ -193,6 +196,7 @@ function claude_show(name)
   return function()
     local sess = claude_sessions[name]
     if not sess then return end
+    claude_last = name
     local shown = hl.get_active_special_workspace()
     if not (shown and shown.name == "special:" .. sess.ws) then
       hl.dispatch(hl.dsp.workspace.toggle_special(sess.ws))
@@ -210,9 +214,10 @@ hl.bind(key("C"), function()
   if sess then
     hl.dispatch(hl.dsp.workspace.toggle_special(sess.ws))
   else
-    hl.exec_cmd("claude-pick")
+    hl.dispatch(claude_show(claude_last))
   end
 end)
+hl.bind(mod .. " + ALT + C", exec("claude-pick"))
 
 -- New windows open on the focused workspace, which is a Claude pane while
 -- one is shown. Keep the panes for their Claude window only: send anything
