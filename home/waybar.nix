@@ -3,9 +3,41 @@
 {
   lib,
   osConfig,
+  pkgs,
   ...
 }:
 {
+  # Click the clock for a month calendar with ‹ › buttons (gsimplecal).
+  # Clicking again closes it, as does clicking elsewhere. A Claude pane that
+  # is showing gets hidden first: the guard that moves new windows off it
+  # (hyprland.lua) shifts focus, and gsimplecal closes as soon as it loses
+  # focus. GDK_DPI_SCALE makes the calendar bigger.
+  home.packages = [
+    pkgs.gsimplecal
+    (pkgs.writeShellScriptBin "calendar-popup" ''
+      if pgrep -x gsimplecal >/dev/null; then
+        exec gsimplecal # a second instance closes the first
+      fi
+      shown=$(hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .specialWorkspace.name')
+      case "$shown" in
+        special:claude*) hyprctl dispatch "hl.dsp.workspace.toggle_special(\"''${shown#special:}\")" >/dev/null ;;
+      esac
+      GDK_DPI_SCALE=1.4 exec gsimplecal
+    '')
+  ];
+  xdg.configFile."gsimplecal/config".text = ''
+    show_calendar = 1
+    show_timezones = 0
+    mark_today = 1
+    show_week_numbers = 1
+    close_on_unfocus = 1
+    mainwindow_decorated = 0
+    mainwindow_keep_above = 1
+    mainwindow_skip_taskbar = 1
+    mainwindow_resizable = 0
+    mainwindow_position = none
+  '';
+
   programs.waybar = {
     enable = true;
     systemd = {
@@ -49,28 +81,9 @@
       clock = {
         # ISO-ish, which is what Swedish locale gives you anyway.
         format = "{:%a %d %b  %H:%M}";
-        # Hover for the calendar: scroll over the clock to change month,
-        # click to jump back to today, right-click for the whole year.
-        tooltip-format = "<tt><span size='large'>{calendar}</span></tt>";
-        calendar = {
-          mode = "month";
-          mode-mon-col = 3; # year view: 3 months per row
-          weeks-pos = "right";
-          on-scroll = 1;
-          format = {
-            months = "<span color='#cba6f7'><b>{}</b></span>";
-            weekdays = "<span color='#89b4fa'><b>{}</b></span>";
-            weeks = "<span color='#6c7086'>{}</span>";
-            days = "<span color='#cdd6f4'>{}</span>";
-            today = "<span color='#1e1e2e' background='#89b4fa'><b>{}</b></span>";
-          };
-        };
-        actions = {
-          on-click = "shift_reset";
-          on-click-right = "mode";
-          on-scroll-up = "shift_up";
-          on-scroll-down = "shift_down";
-        };
+        # The calendar is a popup (calendar-popup above), so no tooltip.
+        tooltip = false;
+        on-click = "calendar-popup";
       };
 
       cpu = {

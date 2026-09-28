@@ -379,6 +379,15 @@ for name, sess in pairs(claude_sessions) do
   })
 end
 
+-- The Waybar clock's calendar (calendar-popup in home/waybar.nix): centred
+-- just under the bar.
+hl.window_rule({
+  name  = "calendar-popup",
+  match = { class = "^(gsimplecal)$" },
+  float = true,
+  move  = "(monitor_w*0.5-window_w*0.5) 40",
+})
+
 hl.window_rule({
   name   = "rebuild-log",
   match  = { class = "^(rebuild-log)$" },
