@@ -8,21 +8,16 @@
 }:
 {
   # Click the clock for a month calendar with ‹ › buttons (gsimplecal).
-  # Clicking again closes it, as does clicking elsewhere. A Claude pane that
-  # is showing gets hidden first: the guard that moves new windows off it
-  # (hyprland.lua) shifts focus, and gsimplecal closes as soon as it loses
-  # focus. It runs with its own GTK theme (below), so other GTK apps keep
-  # plain Adwaita-dark.
+  # Clicking again closes it, as does clicking elsewhere. Over a Claude pane
+  # it opens on top of it (it's exempt from the pane guard in hyprland.lua).
+  # It runs with its own GTK theme (below), so other GTK apps keep plain
+  # Adwaita-dark.
   home.packages = [
     pkgs.gsimplecal
     (pkgs.writeShellScriptBin "calendar-popup" ''
       if pgrep -x gsimplecal >/dev/null; then
         exec gsimplecal # a second instance closes the first
       fi
-      shown=$(hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .specialWorkspace.name')
-      case "$shown" in
-        special:claude*) hyprctl dispatch "hl.dsp.workspace.toggle_special(\"''${shown#special:}\")" >/dev/null ;;
-      esac
       GTK_THEME=gsimplecal-catppuccin exec gsimplecal
     '')
   ];

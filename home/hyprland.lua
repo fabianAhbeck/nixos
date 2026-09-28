@@ -233,8 +233,12 @@ hl.bind(shift("C"), exec("claude-pick"))
 -- one is shown. Keep the panes for their Claude window only: send anything
 -- else to the regular workspace underneath, hide the pane and focus the new
 -- window. The hide/focus runs on a timer: it has no effect inside window.open.
+-- Small popups are exempt and simply open over the pane.
+local pane_popups = {
+  gsimplecal = true, -- the Waybar clock's calendar
+}
 hl.on("window.open", function(w)
-  if not w then return end
+  if not w or pane_popups[w.class] then return end
   local ws = w.workspace
   local sess = ws and claude_session_on(ws.name)
   if not sess or w.class == sess.class then return end
