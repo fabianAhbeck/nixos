@@ -56,6 +56,48 @@
   networking.networkmanager = {
     enable = true;
     wifi.backend = "iwd"; # noticeably better roaming than wpa_supplicant on AX201
+    plugins = [ pkgs.networkmanager-openvpn ];
+
+    # Home VPN: whenever a network comes up, connect `home-vpn` unless we're
+    # on the home Wi-Fi, where it's disconnected instead. The connection
+    # itself (with its keys and password) is imported into NetworkManager,
+    # not kept in this repo; see "Home VPN" in README.md.
+    dispatcherScripts = [
+      {
+        type = "basic";
+        source = pkgs.writeShellScript "home-vpn" ''
+          vpn="home-vpn"
+          home_ssid="Calaverea Cafe"
+          nmcli=${pkgs.networkmanager}/bin/nmcli
+
+          case "$2" in up | down | connectivity-change) ;; *) exit 0 ;; esac
+          [ "$CONNECTION_ID" = "$vpn" ] && exit 0 # the VPN's own events
+          $nmcli -g NAME connection show | grep -qxF "$vpn" || exit 0 # not imported
+
+          active=$($nmcli -g UUID,TYPE,NAME connection show --active)
+          at_home=false online=false vpn_up=false
+          while IFS=: read -r uuid type name; do
+            case "$type" in
+              802-11-wireless)
+                online=true
+                [ "$($nmcli -g 802-11-wireless.ssid connection show "$uuid")" = "$home_ssid" ] && at_home=true
+                ;;
+              802-3-ethernet) online=true ;;
+              vpn) [ "$name" = "$vpn" ] && vpn_up=true ;;
+            esac
+          done <<< "$active"
+
+          if $at_home; then
+            $vpn_up && $nmcli connection down "$vpn"
+          elif $online && ! $vpn_up; then
+            # Backgrounded: dispatcher scripts have a timeout, and bringing a
+            # VPN up can take a while.
+            $nmcli connection up "$vpn" >/dev/null 2>&1 &
+          fi
+          exit 0
+        '';
+      }
+    ];
   };
 
   networking.firewall = {

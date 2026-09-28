@@ -176,6 +176,24 @@ boot.resumeDevice = "/dev/mapper/cryptroot";
 
 Rebuild, reboot, then test with `systemctl hibernate`.
 
+### Home VPN
+
+`home-vpn` (OpenVPN) connects automatically whenever a network comes up,
+except on the home Wi-Fi ("Calaverea Cafe"), where it's disconnected. The
+logic is a NetworkManager dispatcher script in `hosts/zenbook/default.nix`.
+The connection itself holds keys and a password, so it's imported into
+NetworkManager (root-only, `/etc/NetworkManager/system-connections`) rather
+than kept in this repo:
+
+```sh
+nmcli connection import type openvpn file Client.ovpn
+nmcli connection modify Client connection.id home-vpn
+nm-connection-editor   # home-vpn → VPN: username + password, "store for all users"
+```
+
+Delete the `.ovpn` afterwards; its private key now lives in NetworkManager.
+`nmcli connection up home-vpn` / `down home-vpn` still work by hand.
+
 ### Wallpaper
 
 The first login gets the NixOS "nineish dark gray" wallpaper. To change it:
