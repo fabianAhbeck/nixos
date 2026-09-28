@@ -49,13 +49,28 @@
       clock = {
         # ISO-ish, which is what Swedish locale gives you anyway.
         format = "{:%a %d %b  %H:%M}";
-        tooltip-format = "<tt><small>{calendar}</small></tt>";
+        # Hover for the calendar: scroll over the clock to change month,
+        # click to jump back to today, right-click for the whole year.
+        tooltip-format = "<tt><span size='large'>{calendar}</span></tt>";
         calendar = {
           mode = "month";
+          mode-mon-col = 3; # year view: 3 months per row
           weeks-pos = "right";
-          format.today = "<b>{}</b>";
+          on-scroll = 1;
+          format = {
+            months = "<span color='#cba6f7'><b>{}</b></span>";
+            weekdays = "<span color='#89b4fa'><b>{}</b></span>";
+            weeks = "<span color='#6c7086'>{}</span>";
+            days = "<span color='#cdd6f4'>{}</span>";
+            today = "<span color='#1e1e2e' background='#89b4fa'><b>{}</b></span>";
+          };
         };
-        actions.on-click-right = "mode";
+        actions = {
+          on-click = "shift_reset";
+          on-click-right = "mode";
+          on-scroll-up = "shift_up";
+          on-scroll-down = "shift_down";
+        };
       };
 
       cpu = {
@@ -200,6 +215,16 @@
 
       #clock {
         font-weight: 600;
+      }
+
+      tooltip {
+        background: #1e1e2e;
+        border: 2px solid #89b4fa;
+        border-radius: 10px;
+      }
+      tooltip label {
+        color: #cdd6f4;
+        padding: 4px 6px;
       }
 
       #battery.warning  { color: #f9e2af; }
