@@ -11,6 +11,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + Return` | Terminal (kitty) |
 | `SUPER + D` | App launcher (wofi) |
 | `SUPER + W` | Firefox |
+| `SUPER + SHIFT + D` | Discord |
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
