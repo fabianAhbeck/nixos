@@ -44,7 +44,7 @@ home/                     Home Manager; reads my.* as osConfig.my
 1. `hosts/<name>/default.nix` with `networking.hostName`, `system.stateVersion`,
    the hardware bits (GPU drivers, nixos-hardware profiles, power) and the
    `my.*` settings: `monitors` (from `hyprctl monitors`), `backlight` (null on
-   a desktop), `laptop`, `cpuTempSensor`. `hosts/zenbook/default.nix` is the
+   a desktop) and `laptop`. `hosts/zenbook/default.nix` is the
    worked example.
 2. `hosts/<name>/disko.nix` and `hardware-configuration.nix`, generated on the
    machine as in the install steps below — and `git add` them.

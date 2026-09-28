@@ -30,7 +30,6 @@
     ];
     backlight = "intel_backlight";
     laptop = true;
-    cpuTempSensor = "/sys/devices/platform/coretemp.0/hwmon"; # Tiger Lake package sensor
   };
 
   # 8 threads on the i7-1165G7; leave two free during big rebuilds.

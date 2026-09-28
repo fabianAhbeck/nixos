@@ -1,5 +1,4 @@
-# Status bar. Battery and the CPU temperature sensor follow my.laptop and
-# my.cpuTempSensor (modules/host.nix).
+# Status bar. The battery module follows my.laptop (modules/host.nix).
 {
   lib,
   osConfig,
@@ -13,6 +12,7 @@
   # It runs with its own GTK theme (below), so other GTK apps keep plain
   # Adwaita-dark.
   home.packages = [
+    pkgs.mission-center
     pkgs.gsimplecal
     (pkgs.writeShellScriptBin "calendar-popup" ''
       if pgrep -x gsimplecal >/dev/null; then
@@ -98,7 +98,7 @@
         "network"
         "cpu"
         "memory"
-        "temperature"
+        "custom/temps"
       ]
       ++ lib.optional osConfig.my.laptop "battery"
       ++ [
@@ -120,26 +120,35 @@
         on-click = "calendar-popup";
       };
 
+      # Clicking CPU, memory or temperature opens Mission Center, a graphical
+      # system monitor (btop is still there in a terminal).
       cpu = {
-        format = "󰻠 {usage}%";
+        format = " {usage}%";
         interval = 5;
-        on-click = "kitty -e btop";
+        on-click = "mission-center";
       };
 
       memory = {
-        format = "󰍛 {percentage}%";
+        format = " {percentage}%";
         interval = 10;
+        on-click = "mission-center";
         tooltip-format = "{used:0.1f}G / {total:0.1f}G";
       };
 
-      temperature = {
-        critical-threshold = 85;
-        format = " {temperatureC}°C";
-        format-critical = " {temperatureC}°C";
-      }
-      // lib.optionalAttrs (osConfig.my.cpuTempSensor != null) {
-        hwmon-path-abs = osConfig.my.cpuTempSensor;
-        input-filename = "temp1_input";
+      # CPU temperature in the bar; hover for every sensor (cores, SSD,
+      # motherboard, Wi-Fi, ...), colour-coded. See scripts/waybar-temps.sh.
+      "custom/temps" = {
+        exec = lib.getExe (
+          pkgs.writeShellApplication {
+            name = "waybar-temps";
+            runtimeInputs = [ pkgs.jq ];
+            text = builtins.readFile ./scripts/waybar-temps.sh;
+          }
+        );
+        return-type = "json";
+        interval = 5;
+        format = " {}";
+        on-click = "mission-center";
       };
 
       battery = {
@@ -249,7 +258,7 @@
       #clock,
       #cpu,
       #memory,
-      #temperature,
+      #custom-temps,
       #battery,
       #network,
       #bluetooth,
@@ -276,7 +285,7 @@
 
       #battery.warning  { color: #f9e2af; }
       #battery.critical { color: #f38ba8; }
-      #temperature.critical { color: #f38ba8; }
+      #custom-temps.critical { color: #f38ba8; }
       #network.disconnected { color: #f38ba8; }
       #custom-power { color: #f38ba8; padding-right: 14px; }
     '';

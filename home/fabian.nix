@@ -307,6 +307,11 @@ in
   # Qt apps (the polkit password dialog, VLC, Wireshark, ...) get the same
   # Catppuccin Mocha colours as kitty, Waybar and hyprlock. The palette comes
   # from qt6ct/qt5ct; Fusion is the Qt style that actually follows it.
+  # libadwaita/GTK4 apps (Mission Center, Nautilus, Loupe, Calculator) ignore
+  # the GTK theme and follow this instead; the portal also passes it on to
+  # apps like Firefox.
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
+
   qt = {
     enable = true;
     platformTheme.name = "qtct";

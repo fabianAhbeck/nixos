@@ -68,12 +68,5 @@ in
       default = false;
       description = "Show battery status in Waybar.";
     };
-
-    cpuTempSensor = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "/sys/devices/platform/coretemp.0/hwmon";
-      description = "hwmon directory for Waybar's CPU temperature; null uses the default thermal zone.";
-    };
   };
 }
