@@ -13,7 +13,7 @@
 #           ├─ @log       -> /var/log
 #           ├─ @snapshots -> /.snapshots
 #           └─ @swap      -> /swap/swapfile (34G, sized for hibernate)
-{ ... }:
+_:
 {
   disko.devices.disk.main = {
     # Verify with `lsblk` before installing -- on the live ISO this should

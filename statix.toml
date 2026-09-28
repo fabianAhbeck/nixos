@@ -1,0 +1,4 @@
+# `nix run nixpkgs#statix -- check .`
+# repeated_keys: this repo writes e.g. `boot.loader.x` and `boot.kernelParams`
+# as separate lines on purpose, so each setting sits next to its comment.
+disabled = [ "repeated_keys" ]

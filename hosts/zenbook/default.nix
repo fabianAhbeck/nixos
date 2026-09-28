@@ -40,11 +40,10 @@
   # Graphics -- Tiger Lake Iris Xe
   ###########################################################################
 
-  hardware.graphics.extraPackages = with pkgs; [
-    intel-media-driver # iHD VA-API driver, the right one for Gen11+
-    vpl-gpu-rt # QSV / oneVPL runtime for hardware encode
-    intel-compute-runtime # OpenCL
-  ];
+  # The drivers themselves (intel-media-driver for VA-API, vpl-gpu-rt for
+  # QSV encode, intel-compute-runtime for OpenCL) come from nixos-hardware's
+  # common-cpu-intel profile above. It also installs the legacy i965 driver,
+  # so pin VA-API to iHD, the right one for Gen11+.
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
   ###########################################################################

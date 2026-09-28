@@ -22,11 +22,9 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # plymouth adds `splash` to the kernel command line itself.
   boot.plymouth.enable = true;
-  boot.kernelParams = [
-    "quiet"
-    "splash"
-  ];
+  boot.kernelParams = [ "quiet" ];
 
   ###########################################################################
   # Networking
@@ -106,7 +104,6 @@
       "video"
       "audio"
       "libvirtd"
-      "docker"
       "dialout" # serial consoles / flashing boards
     ];
     shell = pkgs.zsh;

@@ -1,7 +1,6 @@
 # Nix daemon settings, garbage collection, and the unfree policy.
 {
   config,
-  lib,
   pkgs,
   inputs,
   ...
