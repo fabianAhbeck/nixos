@@ -18,6 +18,11 @@ in
         default = "/home/fabian/Projects/dotfiles";
         description = "Checkout of the dotfiles repo (nvim config, its Claude pane).";
       };
+      homelab = mkOption {
+        type = types.str;
+        default = "/home/fabian/Projects/homelab";
+        description = "Homelab configs (nixos-configs/ inside), for its Claude pane.";
+      };
     };
 
     monitors = mkOption {

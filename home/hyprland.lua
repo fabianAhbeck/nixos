@@ -187,6 +187,7 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 local claude_sessions = {
   nixos    = { class = "claude-nixos",    ws = "claude",          dir = host.repos.nixos },
   dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = host.repos.dotfiles },
+  homelab  = { class = "claude-homelab",  ws = "claude-homelab",  dir = host.repos.homelab },
 }
 
 local claude_last = "nixos"

@@ -86,8 +86,8 @@ in
         if printf '%s' "$clients" | ${pkgs.jq}/bin/jq -e --arg c "claude-$1" 'any(.[]; .class == $c)' >/dev/null
         then echo "●  $1"; else echo "○  $1"; fi
       }
-      choice=$({ line nixos; line dotfiles; } \
-        | wofi --dmenu --prompt "Claude" --width 260 --lines 3 --cache-file /dev/null) || exit 0
+      choice=$({ line nixos; line dotfiles; line homelab; } \
+        | wofi --dmenu --prompt "Claude" --width 260 --lines 4 --cache-file /dev/null) || exit 0
       hyprctl dispatch "claude_show(\"''${choice##* }\")" >/dev/null
     '')
 
