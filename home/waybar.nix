@@ -5,6 +5,10 @@
   pkgs,
   ...
 }:
+let
+  # The package is mission-center, the binary missioncenter.
+  missionCenter = "${pkgs.mission-center}/bin/missioncenter";
+in
 {
   # Click the clock for a month calendar with ‹ › buttons (gsimplecal).
   # Clicking again closes it, as does clicking elsewhere. Over a Claude pane
@@ -125,13 +129,13 @@
       cpu = {
         format = " {usage}%";
         interval = 5;
-        on-click = "mission-center";
+        on-click = missionCenter;
       };
 
       memory = {
         format = " {percentage}%";
         interval = 10;
-        on-click = "mission-center";
+        on-click = missionCenter;
         tooltip-format = "{used:0.1f}G / {total:0.1f}G";
       };
 
@@ -148,7 +152,7 @@
         return-type = "json";
         interval = 5;
         format = " {}";
-        on-click = "mission-center";
+        on-click = missionCenter;
       };
 
       battery = {
