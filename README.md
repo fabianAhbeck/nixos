@@ -210,6 +210,10 @@ nmcli connection modify Client connection.id home-vpn
 nm-connection-editor   # home-vpn → VPN: username + password, "store for all users"
 ```
 
+The server is UniFi's OpenVPN server on TCP 1194, reached as
+`vpn.leafer.site` (Cloudflare record kept current by UniFi's dynamic DNS);
+if the exported `.ovpn` has a bare IP, point it at the hostname:
+`nmcli connection modify home-vpn +vpn.data "remote=vpn.leafer.site:1194"`.
 Delete the `.ovpn` afterwards; its private key now lives in NetworkManager.
 `nmcli connection up home-vpn` / `down home-vpn` still work by hand.
 
