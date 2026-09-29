@@ -47,6 +47,7 @@
     ###########################################################################
     kubectl
     kubelogin-oidc # `kubectl oidc-login`: OIDC tokens (browser login) for the leafer cluster
+    vault # HashiCorp Vault CLI; VAULT_ADDR below points it at the homelab
     kubectx
     kubernetes-helm
     k9s
@@ -107,6 +108,8 @@
   # fuzzy matcher, and the odd vendor CLI. Without it they fail with
   # "No such file or directory" because there is no /lib64/ld-linux.
   programs.nix-ld.enable = true;
+
+  environment.sessionVariables.VAULT_ADDR = "https://vault.leafer.site";
 
   programs.zsh.enable = true; # must be enabled system-wide to be a login shell
 
