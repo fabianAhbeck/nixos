@@ -188,7 +188,10 @@ hl.bind(shift("S"), hl.dsp.window.move({ workspace = "special:magic" }))
 local claude_sessions = {
   nixos    = { class = "claude-nixos",    ws = "claude",          dir = host.repos.nixos },
   dotfiles = { class = "claude-dotfiles", ws = "claude-dotfiles", dir = host.repos.dotfiles },
-  homelab  = { class = "claude-homelab",  ws = "claude-homelab",  dir = host.repos.homelab },
+  -- Runs on the homelab's Claude VM over ssh, inside tmux (claude-remote in
+  -- hyprland.nix), so a dropped connection doesn't end the session.
+  homelab  = { class = "claude-homelab",  ws = "claude-homelab",
+               remote = "claude@10.0.20.203", dir = "/home/claude/Project" },
 }
 
 local claude_last = "nixos"
@@ -212,8 +215,13 @@ function claude_show(name)
       hl.dispatch(hl.dsp.workspace.toggle_special(sess.ws))
     end
     if #hl.get_windows({ class = sess.class }) == 0 then
-      hl.exec_cmd(terminal .. " --class " .. sess.class .. " --directory " .. sess.dir
-        .. " sh -c 'claude --continue || claude'")
+      if sess.remote then
+        hl.exec_cmd(terminal .. " --class " .. sess.class .. " claude-remote "
+          .. sess.remote .. " " .. sess.class .. " " .. sess.dir)
+      else
+        hl.exec_cmd(terminal .. " --class " .. sess.class .. " --directory " .. sess.dir
+          .. " sh -c 'claude --continue || claude'")
+      end
     end
   end
 end

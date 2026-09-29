@@ -78,6 +78,27 @@ in
       exec awww img --transition-type fade "$1"
     '')
 
+    # claude-remote HOST SESSION DIR [CMD]: Claude Code (or CMD) in a tmux
+    # session on HOST, for Claude panes with `remote` set in hyprland.lua.
+    # tmux keeps it running there if the connection drops, and this
+    # reattaches. Exit 0 means Claude exited or tmux was detached on purpose,
+    # which closes the pane; anything else (255 = connection lost) retries.
+    (pkgs.writeShellScriptBin "claude-remote" ''
+      host=$1 session=$2 dir=$3 cmd=''${4:-claude --continue || claude}
+      remote="tmux new-session -A -s $session -c $dir '$cmd'"
+      remote+=" \; set -g mouse on \; set -g status off \; set -sg escape-time 10"
+      remote+=" \; set -g history-limit 50000 \; set -as terminal-features ',xterm-256color:RGB'"
+      while true; do
+        # kitty's own TERM isn't known on the far side.
+        TERM=xterm-256color ssh -t -o ControlMaster=no -o ConnectTimeout=10 \
+          -o ServerAliveInterval=10 -o ServerAliveCountMax=3 "$host" "$remote"
+        status=$?
+        [ "$status" -eq 0 ] && exit 0
+        printf '\n\033[33mLost the connection to %s (exit %s); reconnecting in 3s (Claude keeps running there in tmux)...\033[0m\n' "$host" "$status"
+        sleep 3
+      done
+    '')
+
     # SUPER+C picker for the Claude scratchpads (hyprland.lua). ● marks a
     # session that is already running.
     (pkgs.writeShellScriptBin "claude-pick" ''

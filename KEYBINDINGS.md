@@ -16,7 +16,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
 | `SUPER + C` | Show/hide Claude Code: the session you used last (nixos by default). Each resumes its repo's last conversation |
-| `SUPER + SHIFT + C` | Pick which Claude session to show (nixos / dotfiles / homelab; ● = running); SUPER + C then toggles that one |
+| `SUPER + SHIFT + C` | Pick which Claude session to show (nixos / dotfiles / homelab; ● = running); SUPER + C then toggles that one. homelab runs on claude@10.0.20.203 inside tmux and reconnects by itself if the connection drops (needs home network or the VPN) |
 | `SUPER + SHIFT + R` | Rebuild the system in the background; a notification tracks it and a password dialog appears when the build is done |
 
 ## Windows
