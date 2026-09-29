@@ -1,31 +1,44 @@
-# NixOS — ASUS ZenBook UX425EA
+# NixOS config
 
-Flake-based NixOS config for `zenbook`: Intel i7-1165G7 (Tiger Lake), 32 GB RAM,
-1 TB NVMe, Iris Xe graphics, Wi-Fi 6 AX201.
-
-Hyprland on Wayland, LUKS + btrfs, Home Manager, Swedish keyboard with an
+Flake-based NixOS + Home Manager configuration for my machines: Hyprland on
+Wayland, Catppuccin Mocha throughout, LUKS + btrfs, Swedish keyboard with an
 English UI.
 
 Keybindings and handy commands: [KEYBINDINGS.md](KEYBINDINGS.md).
 
-## Status
+| Host | Machine | Notes |
+|---|---|---|
+| `zenbook` | ASUS ZenBook UX425EA — i7-1165G7 (Tiger Lake), Iris Xe, 32 GB, 1 TB NVMe, 1080p panel | laptop: TLP, battery limit, hibernation, home VPN |
+| — | desktop (NVIDIA, ultrawide) | planned; see [Adding a machine](#adding-a-machine) |
 
-`nix flake check` passes against the pinned inputs in `flake.lock`
-(nixpkgs `e158d9e`, 2026-09-26). That means the whole configuration — system
-and Home Manager — *evaluates* cleanly, with no errors and no deprecation
-warnings. It has not been *built* or booted; expect the first
-`nixos-install` to be the real test.
+## Day to day
+
+| | |
+|---|---|
+| `SUPER + SHIFT + R` | rebuild in the background; a notification tracks it, a password dialog appears when the build is done |
+| `rebuild` | the same in a terminal (`nh os switch`) |
+| `rebuild-test` | apply without adding a boot entry |
+| `rebuild-boot` | only on next boot — use this when changing the greeter, which a live switch can't restart safely |
+| `update` | `nix flake update`, then rebuild |
+| `gc` | delete old generations now (also runs weekly, keeping the last 5 and anything from the last 30 days) |
+| `nvd diff /run/current-system result` | what changed between two builds |
+
+Roll back a bad rebuild by picking an older generation in the systemd-boot
+menu.
+
+**New files must be `git add`ed** (or at least `git add -N`) before a
+rebuild: Nix builds from the git tree and silently ignores untracked files.
 
 ## Layout
 
 ```
 flake.nix                 inputs; mkHost builds each machine from modules/ + hosts/<name>/
-hosts/zenbook/            everything specific to this laptop:
-  default.nix             my.* values, Intel GPU, hibernation, TLP/battery/lid, home VPN
-  disko.nix               declarative partitioning — LUKS + btrfs subvolumes
-  hardware-configuration.nix   REGENERATE during install (see below)
+hosts/<name>/             everything specific to one machine:
+  default.nix             my.* values, GPU drivers, power, machine-only services
+  disko.nix               declarative partitioning
+  hardware-configuration.nix   generated on the machine (see Installing)
 modules/                  shared by every machine (default.nix imports them all)
-  host.nix                my.* options: monitors, backlight, laptop, CPU temp sensor, repo paths
+  host.nix                my.* options: monitors, backlight, laptop, repo paths
   common.nix              boot, networking, locale + console, user, sudo, Home Manager
   nix.nix                 nix daemon, nh + cleanup, caches, allowUnfree
   desktop.nix             Hyprland, greeter, portals, pipewire, graphics, fonts
@@ -33,239 +46,149 @@ modules/                  shared by every machine (default.nix imports them all)
   apps.nix                Firefox, Thunderbird, Discord, VLC, VS Code, Steam
   virtualisation.nix      libvirt/virt-manager, podman
 home/                     Home Manager; reads my.* as osConfig.my
-  fabian.nix              git, kitty, neovim, mako, wofi, hyprlock, hypridle, theming
+  fabian.nix              git, kitty, neovim (config from the dotfiles repo), mako, wofi,
+                          hyprlock, hypridle, theming
   hyprland.nix/.lua       compositor config and key bindings (gets a `host` table from my.*)
-  waybar.nix              status bar
+  waybar.nix              status bar, calendar popup, temperature module
   shell.nix               zsh, starship, fzf, tmux, aliases
+  scripts/                shell scripts built into the config
 ```
 
-### Adding a machine
+## Adding a machine
 
 1. `hosts/<name>/default.nix` with `networking.hostName`, `system.stateVersion`,
    the hardware bits (GPU drivers, nixos-hardware profiles, power) and the
    `my.*` settings: `monitors` (from `hyprctl monitors`), `backlight` (null on
-   a desktop) and `laptop`. `hosts/zenbook/default.nix` is the
-   worked example.
-2. `hosts/<name>/disko.nix` and `hardware-configuration.nix`, generated on the
-   machine as in the install steps below — and `git add` them.
+   a desktop) and `laptop`. `hosts/zenbook/default.nix` is the worked example.
+2. `hosts/<name>/disko.nix` (adapt zenbook's) and `hardware-configuration.nix`,
+   generated on the machine as below.
 3. One line in `flake.nix`: `nixosConfigurations.<name> = mkHost "<name>";`
 
-Notes for the desktop (NVIDIA, ultrawide), for when it moves over:
-`hardware.nvidia` with the open kernel module and `services.xserver.videoDrivers
-= [ "nvidia" ]`, `my.monitors` with the ultrawide's mode and refresh rate (its
-scale steps come out as 1 / 1.25 / 1.33 / 1.6 / 2), and none of zenbook's
-laptop power, hibernation or VPN settings.
+For the planned desktop: `hardware.nvidia` with the open kernel module and
+`services.xserver.videoDrivers = [ "nvidia" ]`, `my.monitors` with the
+ultrawide's mode and refresh rate (its scale steps come out as 1 / 1.25 /
+1.33 / 1.6 / 2), and none of zenbook's laptop power, hibernation or VPN
+settings.
 
-## Installing
+## Installing on a machine
 
-Written for the actual machine this replaces: an ASUS ZenBook UX425EA running
-Ubuntu 24.04, with a 30 GB SanDisk Extreme USB stick.
+1. **Write a NixOS ISO to a USB stick.** The graphical ISO is easiest (browser,
+   GUI Wi-Fi). Its version doesn't matter: `nixos-install` builds from this
+   flake's pinned nixpkgs. Check the stick's device with `lsblk` right before
+   writing — `/dev/sdX` versus the internal disk is the difference between
+   losing a stick and losing the machine:
 
-### Devices
+   ```sh
+   sudo dd if=nixos-graphical-*.iso of=/dev/sdX bs=4M status=progress oflag=direct conv=fsync
+   ```
 
-| | |
-|---|---|
-| USB stick | `/dev/sda` — SanDisk Extreme, 29.8 G, removable |
-| Internal disk | `/dev/nvme0n1` — 953.9 G NVMe — **this is what gets wiped** |
+2. **Boot it** from the firmware's boot menu, with Secure Boot off.
 
-Re-check both with `lsblk` before each destructive step. USB enumeration is not
-guaranteed stable across reboots, and `sda` vs `nvme0n1` is the difference
-between losing a USB stick and losing the machine.
+3. **Install**, from a root shell on the live system:
 
-### Step 1 — Write the ISO to the stick
+   ```sh
+   export NIX_CONFIG="experimental-features = nix-command flakes"
+   git clone https://github.com/fabianAhbeck/nixos /tmp/nixos && cd /tmp/nixos
+   lsblk                                    # confirm the target disk in hosts/<name>/disko.nix
 
-Using `nixos-graphical-25.11` — the graphical ISO, for its browser and GUI
-Wi-Fi. Verified against releases.nixos.org:
+   # Partition, format, mount (prompts for the LUKS passphrase).
+   nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#<name>
 
-```
-cd96cc2a8d6dde124bbd666126f09003017156804336f994b8dd2d09472c9c7e
-```
+   # Probe the real hardware; --no-filesystems because disko owns those.
+   nixos-generate-config --no-filesystems --root /mnt
+   cp /mnt/etc/nixos/hardware-configuration.nix hosts/<name>/
+   git add -A
 
-The stick had Proxmox VE on it, so unmount before writing:
+   nixos-install --flake .#<name>
+   nixos-enter --root /mnt -c 'passwd fabian'
+   reboot
+   ```
 
-```sh
-sudo umount /dev/sda3
-lsblk -o NAME,SIZE,TRAN,MODEL /dev/sda     # confirm it is still the SanDisk
+4. **After the first login:** add an SSH key to GitHub and point the clone at
+   `git@github.com:fabianAhbeck/nixos.git`; move it to `~/Projects/nixos`
+   (`my.repos.nixos`); then rebuild once.
 
-sudo dd if=~/Downloads/nixos-graphical-25.11.7766.fea3b367d61c-x86_64-linux.iso \
-        of=/dev/sda bs=4M status=progress oflag=direct conv=fsync
-```
+Things that bite:
 
-2–4 minutes. Let `conv=fsync` return before pulling the stick.
+- **Always use the generated `hardware-configuration.nix`**, never one written
+  for other hardware. zenbook's first committed copy lacked the `vmd` initrd
+  module its NVMe sits behind, and every generation built from it hung before
+  the LUKS prompt.
+- **`passwd` before rebooting.** The user has no password in the config; skip
+  it and the greeter refuses the login until you boot the ISO again.
+- **The LUKS passphrase has no recovery.**
+- **`git add` the generated files.** Nix ignores untracked files in a git
+  tree; `nixos-install --flake path:/tmp/nixos#<name>` sidesteps that.
 
-The ISO is 25.11 while this flake tracks unstable (26.11pre). That's fine —
-`nixos-install` builds the system from the flake's own nixpkgs, not the ISO's.
-
-### Step 2 — Boot it
-
-Tap **ESC** repeatedly as the ASUS logo appears for the boot menu (**F2** is
-BIOS setup). Secure Boot is already disabled on this machine. Pick the USB
-entry, then "NixOS Installer".
-
-### Step 3 — Install
-
-Connect Wi-Fi from the top-right menu, open a terminal:
-
-```sh
-sudo -i
-export NIX_CONFIG="experimental-features = nix-command flakes"
-
-lsblk                      # confirm the internal disk is still nvme0n1
-
-git clone https://github.com/fabianAhbeck/nixos /tmp/nixos
-cd /tmp/nixos
-
-# Partition, format, mount. Prompts for the LUKS passphrase, twice.
-nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#zenbook
-
-# Probe the real hardware. --no-filesystems because disko owns those.
-nixos-generate-config --no-filesystems --root /mnt
-cp /mnt/etc/nixos/hardware-configuration.nix ./hosts/zenbook/hardware-configuration.nix
-git add -A                 # Nix ignores untracked files in a git tree
-
-nixos-install --flake .#zenbook               # ~3-4 GB, 15-30 min
-nixos-enter --root /mnt -c 'passwd fabian'    # do not skip
-reboot
-```
-
-Pull the stick as it reboots.
-
-### Two things that will bite you
-
-- **`passwd fabian` is mandatory.** The config defines the user with no
-  password. Skip this and greetd will refuse the login, and fixing it means
-  booting the ISO again.
-- **The LUKS passphrase has no recovery.** Forget it and the disk is gone.
-
-### First login
-
-tuigreet, then Hyprland. `SUPER+Return` for a terminal, `SUPER+D` for the
-launcher, `SUPER+Q` closes a window, `SUPER+SHIFT+Q` opens the power menu. The
-full bind list is in `home/hyprland.nix`.
-
-Then, in rough priority:
-
-1. New SSH key for GitHub — the old one does not survive the wipe:
-   `ssh-keygen -t ed25519 -C fabian.ahbeck@irori.se`, add it at
-   <https://github.com/settings/keys>, then re-point this repo at
-   `git@github.com:fabianAhbeck/nixos.git`.
-2. Move the repo from `/tmp/nixos` to `/home/fabian/Projects/nixos`, the path
-   `NH_FLAKE` expects.
-3. `resume_offset` for hibernation (below).
-4. Optionally, a wallpaper (below).
-
-### The untracked-file gotcha
-
-When a flake lives in a git repo, Nix builds from the git tree, **silently
-ignoring untracked files**. If you copied the config with `cp -r` and it has no
-`.git`, this doesn't apply. But in a clone, a freshly generated
-`hardware-configuration.nix` that you forgot to `git add` means Nix quietly uses
-the committed placeholder instead — and you get a system that won't boot.
-
-Two ways to avoid it:
-
-- `git add -A` before installing, as Step 3 does, or
-- bypass git semantics entirely: `nixos-install --flake path:/tmp/nixos#zenbook`
-
-The `path:` prefix makes Nix copy the directory as-is, untracked files included.
-
-### flake.lock
-
-`flake.lock` is committed, pinning nixpkgs, home-manager, disko and
-nixos-hardware to the revisions this config was verified against. The install
-will use exactly those. Bump them later with `update`.
-
-## Post-install
+## Per-machine notes: zenbook
 
 ### Hibernation
 
-The swapfile exists but resume is not wired up until the kernel knows its
-physical offset — which can only be read once the filesystem is real:
+Resume from the btrfs swapfile needs the file's physical offset:
 
 ```sh
 sudo btrfs inspect-internal map-swapfile -r /swap/swapfile
 ```
 
-Put that number in `hosts/zenbook/default.nix`:
-
-```nix
-boot.kernelParams = [ ... "resume_offset=<number>" ];
-boot.resumeDevice = "/dev/mapper/cryptroot";
-```
-
-Rebuild, reboot, then test with `systemctl hibernate`.
+That number is `resume_offset` in `hosts/zenbook/default.nix`, with
+`boot.resumeDevice = "/dev/mapper/cryptroot"`. Update it if the swapfile is
+ever recreated (e.g. after a reinstall).
 
 ### Home VPN
 
 `home-vpn` (OpenVPN) connects automatically whenever a network comes up,
 except on the home Wi-Fi ("Calaverea Cafe"), where it's disconnected. The
 logic is a NetworkManager dispatcher script in `hosts/zenbook/default.nix`.
-The connection itself holds keys and a password, so it's imported into
+The server is UniFi's OpenVPN server on TCP 1194, reached as
+`vpn.leafer.site` (kept current by UniFi's dynamic DNS).
+
+The connection holds keys and a password, so it's imported into
 NetworkManager (root-only, `/etc/NetworkManager/system-connections`) rather
 than kept in this repo:
 
 ```sh
 nmcli connection import type openvpn file Client.ovpn
-nmcli connection modify Client connection.id home-vpn
-nm-connection-editor   # home-vpn → VPN: username + password, "store for all users"
+nmcli connection modify Client connection.id home-vpn \
+  +vpn.data "remote=vpn.leafer.site:1194, password-flags=0"
+nm-connection-editor   # home-vpn → VPN: username + password
 ```
 
-The server is UniFi's OpenVPN server on TCP 1194, reached as
-`vpn.leafer.site` (Cloudflare record kept current by UniFi's dynamic DNS);
-if the exported `.ovpn` has a bare IP, point it at the hostname:
-`nmcli connection modify home-vpn +vpn.data "remote=vpn.leafer.site:1194"`.
-Delete the `.ovpn` afterwards; its private key now lives in NetworkManager.
-`nmcli connection up home-vpn` / `down home-vpn` still work by hand.
+`password-flags=0` stores the password with the connection, so the script can
+connect before anyone logs in. Delete the `.ovpn` afterwards; its private key
+now lives in NetworkManager. `nmcli connection up|down home-vpn` still work by
+hand.
 
-### Wallpaper
-
-The first login gets the NixOS "nineish dark gray" wallpaper. To change it:
-
-```sh
-wallpaper ~/Pictures/wallpaper.png
-```
-
-`awww-daemon` remembers the last image and restores it at every login.
-
-(`swww` was renamed to `awww` upstream; the daemon binary is `awww-daemon`.)
-
-### Things worth checking on first boot
+### First-boot checks
 
 | Check | Command |
 |---|---|
 | Hardware video decode | `vainfo` — should report the `iHD` driver |
 | Battery threshold applied | `cat /sys/class/power_supply/BAT*/charge_control_end_threshold` → `80` |
 | Wi-Fi | `nmcli device status` |
-| Suspend | close the lid, reopen |
+| Suspend / hibernate | close the lid; power menu → Hibernate |
 | Firmware updates | `fwupdmgr refresh && fwupdmgr get-updates` |
 | Audio | `wpctl status`, then play something |
 
-## Day to day
+## Customising
 
-```sh
-rebuild              # nh os switch — apply config changes
-rebuild-test         # apply without adding a boot entry
-update               # nix flake update — bump all inputs
-gc                   # collect garbage, keep 5 generations / 30 days
-nvd diff /run/current-system result    # what changed between builds
-```
-
-Roll back a bad rebuild by picking an older generation in the systemd-boot menu.
+- **Wallpaper:** `wallpaper ~/Pictures/wallpaper.png`. The first login gets
+  the NixOS "nineish dark gray" image; awww restores the last one set at every
+  login.
+- **Screen scale:** `SUPER + plus/minus` steps it live; the default is the
+  monitor's `scale` in `my.monitors`.
+- **Neovim** is configured in the dotfiles repo (`~/Projects/dotfiles`);
+  `~/.config/nvim` links there, so edits apply without a rebuild.
 
 ## Notes on the choices here
 
 - **nixos-unstable, not a release branch.** Hyprland moves fast enough that the
-  stable channel is routinely a version or two behind. Swap the `nixpkgs.url`
-  in `flake.nix` to `nixos-26.05` if you'd rather have the slower channel.
-- **No nixos-hardware profile for the UX425EA.** There isn't one upstream; the
-  generic `common-cpu-intel` / `common-pc-laptop` / `common-pc-laptop-ssd`
-  modules plus `asus-battery` cover what this machine needs.
+  stable channel is routinely a version or two behind. Swap `nixpkgs.url` in
+  `flake.nix` to a release branch for the slower channel.
 - **`/boot` is 1 GB and unencrypted.** It holds kernels and initrds;
   `configurationLimit = 10` keeps it from filling up.
-- **TLP, not power-profiles-daemon.** PPD expects a desktop environment to
-  switch profiles for it, and there isn't one here.
+- **TLP on laptops, not power-profiles-daemon.** PPD expects a desktop
+  environment to switch profiles for it, and there isn't one here.
 - **`allowUnfree = true`** rather than a predicate list — Steam alone pulls in
   several separately-named unfree derivations.
-- **Snaps are gone.** Everything you had via snap (`code`, `go`, `helm`, `tofu`,
-  `nvim`, `rustup`, `discord`, `firefox`, `thunderbird`, `steam`, `postman`,
-  `transmission`) is in `modules/dev.nix` or `modules/apps.nix` instead.
+- **Secrets stay out of the repo.** The VPN profile lives in NetworkManager;
+  SSH keys and similar are per machine.
