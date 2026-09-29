@@ -46,6 +46,7 @@
     # Kubernetes / infrastructure -- matches what you run on Ubuntu today
     ###########################################################################
     kubectl
+    kubelogin-oidc # `kubectl oidc-login`: OIDC tokens (browser login) for the leafer cluster
     kubectx
     kubernetes-helm
     k9s
