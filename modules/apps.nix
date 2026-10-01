@@ -57,7 +57,6 @@
     seahorse # keyring UI
 
     # Gaming
-    mangohud
     protonup-qt
   ];
 
