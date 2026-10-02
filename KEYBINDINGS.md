@@ -14,6 +14,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + SHIFT + D` | Discord |
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
+| `SUPER + A` | Read the highlighted text (or the clipboard) aloud, locally with Piper; press again to stop |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
 | `SUPER + C` | Show/hide Claude Code: the session you used last (nixos by default). Each resumes its repo's last conversation |
 | `SUPER + SHIFT + C` | Pick which Claude session to show (nixos / dotfiles / homelab; ● = running); SUPER + C then toggles that one. homelab runs on claude@10.0.20.203 inside tmux and reconnects by itself if the connection drops (needs home network or the VPN) |

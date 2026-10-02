@@ -17,6 +17,7 @@ in
     ./hyprland.nix
     ./waybar.nix
     ./shell.nix
+    ./speech.nix
   ];
 
   home.username = "fabian";
