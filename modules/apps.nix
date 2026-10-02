@@ -33,6 +33,7 @@
   environment.systemPackages = with pkgs; [
     # Communication
     discord
+    slack
 
     # Media
     vlc
