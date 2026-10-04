@@ -269,8 +269,8 @@ in
           on-resume = "hyprctl dispatch dpms on";
         }
         {
-          timeout = 1800; # 30 min -- suspend
-          on-timeout = "systemctl suspend";
+          timeout = 1800; # 30 min -- suspend (laptops: then hibernate, see hosts/)
+          on-timeout = if osConfig.my.laptop then "systemctl suspend-then-hibernate" else "systemctl suspend";
         }
       ];
     };

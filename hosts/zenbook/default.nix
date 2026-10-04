@@ -138,12 +138,19 @@
     };
   };
 
-  # Lid close and the power button both suspend; hibernate is in the power
-  # menu (SUPER+SHIFT+Q).
+  # Sleep. The firmware defaults to s2idle ("modern standby"), which keeps
+  # much of a Tiger Lake system half awake and drains several % an hour;
+  # deep (S3, suspend-to-RAM) powers almost everything down. On battery, lid
+  # and power button suspend and then hibernate after 2 hours, so a laptop
+  # left closed overnight uses nothing. On AC, the lid just suspends.
+  systemd.sleep.settings.Sleep = {
+    MemorySleepMode = "deep";
+    HibernateDelaySec = "2h";
+  };
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
+    HandleLidSwitch = "suspend-then-hibernate";
     HandleLidSwitchExternalPower = "suspend";
-    HandlePowerKey = "suspend";
+    HandlePowerKey = "suspend-then-hibernate";
   };
 
   ###########################################################################
