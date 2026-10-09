@@ -32,8 +32,21 @@ if [ "${#buds[@]}" -gt 0 ]; then
   joined=$(IFS=,; echo "${buds[*]}")
   battery_line+=" (${joined//,/, })"
 fi
+# bosectl's CNC level counts the Bose way, 0 = maximum noise cancelling;
+# show strength instead, 10 = maximum.
+anc_line=""
+cnc=$(field CNC | grep -oE '[0-9]+/10' | cut -d/ -f1 || true)
+if [ -n "$cnc" ]; then
+  strength=$((10 - cnc))
+  meter=""
+  for ((i = 0; i < 10; i++)); do
+    if ((i < strength)); then meter+="█"; else meter+="░"; fi
+  done
+  anc_line="
+Noise cancelling: $meter $strength/10"
+fi
 tooltip="$(field Name)
-Mode: $mode ($(field CNC))
+Mode: $mode$anc_line
 $battery_line
 Click: quiet / aware   Right-click: all modes"
 jq -cn --arg text "$icon $battery" --arg tooltip "$tooltip" --arg class "$mode" \
