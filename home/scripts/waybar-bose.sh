@@ -21,9 +21,20 @@ case "$mode" in
   immersion | cinema) icon="󰗅" ;;   # spatial audio
   *) icon="󰋋" ;;                    # headphones: quiet / full ANC
 esac
+# Earbuds also report each bud and the case; headphones only Battery.
+buds=()
+for part in Left Right Case; do
+  value=$(field "$part")
+  [ -z "$value" ] || buds+=("$part $value")
+done
+battery_line="Battery: $battery"
+if [ "${#buds[@]}" -gt 0 ]; then
+  joined=$(IFS=,; echo "${buds[*]}")
+  battery_line+=" (${joined//,/, })"
+fi
 tooltip="$(field Name)
 Mode: $mode ($(field CNC))
-Battery: $battery
+$battery_line
 Click: quiet / aware   Right-click: all modes"
 jq -cn --arg text "$icon $battery" --arg tooltip "$tooltip" --arg class "$mode" \
   '{text: $text, tooltip: $tooltip, class: $class}'

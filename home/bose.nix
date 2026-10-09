@@ -1,18 +1,17 @@
 # Bose earbuds/headphones control from the bar, via bosectl
-# (https://github.com/alabalag1/bosectl): the Bose BMAP protocol over
-# Bluetooth, no app or account. The QC Ultra 2 Earbuds aren't in its
-# tested list but answer as the QC Ultra Headphones 2 do: status and mode
-# changes read back correctly (tested 2026-10).
+# (https://github.com/aaronsb/bosectl): the Bose BMAP protocol over
+# Bluetooth, no app or account. The QC Ultra Earbuds (2nd Gen) are verified
+# upstream; status, per-bud battery and mode changes also checked here.
 { pkgs, ... }:
 let
   bosectl = pkgs.stdenvNoCC.mkDerivation {
     pname = "bosectl";
-    version = "0.1.0-unstable-2026-10-09";
+    version = "0.5.0";
     src = pkgs.fetchFromGitHub {
-      owner = "alabalag1";
+      owner = "aaronsb";
       repo = "bosectl";
-      rev = "1d2a8791f9ccfce3f7c78b52c8cf796673e12ffc";
-      hash = "sha256-IvSIZH5aBtrzNGrgP1fKKvv7Hx6CzTD5wFx4RSrt5iI=";
+      rev = "v0.5.0";
+      hash = "sha256-NtDgY16mrSzEZoIb2wRUuJ0+xVwBy42or3vSX720vyI=";
     };
     nativeBuildInputs = [ pkgs.makeWrapper ];
     # Pure Python, no dependencies on Linux; the `bosectl` script finds the
