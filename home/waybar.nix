@@ -16,18 +16,30 @@ in
   # It runs with its own GTK theme (below), so other GTK apps keep plain
   # Adwaita-dark.
   home.packages = [
+    (pkgs.writeShellApplication {
+      name = "volume-popup";
+      runtimeInputs = with pkgs; [
+        yad
+        wireplumber # wpctl
+        procps # pkill
+        gawk
+        gnused
+      ];
+      text = builtins.readFile ./scripts/volume-popup.sh;
+    })
     pkgs.mission-center
     pkgs.gsimplecal
     (pkgs.writeShellScriptBin "calendar-popup" ''
       if pgrep -x gsimplecal >/dev/null; then
         exec gsimplecal # a second instance closes the first
       fi
-      GTK_THEME=gsimplecal-catppuccin exec gsimplecal
+      GTK_THEME=catppuccin-popup exec gsimplecal
     '')
   ];
-  # Catppuccin Mocha on top of Adwaita-dark, sized to match the bar: mauve
-  # month/year, blue arrows, weekdays and week numbers, today as a blue pill.
-  xdg.dataFile."themes/gsimplecal-catppuccin/gtk-3.0/gtk.css".text = ''
+  # Catppuccin Mocha on top of Adwaita-dark for the bar's popups (calendar,
+  # volume slider), sized to match the bar: mauve month/year, blue arrows,
+  # weekdays and week numbers, today as a blue pill; blue slider fill.
+  xdg.dataFile."themes/catppuccin-popup/gtk-3.0/gtk.css".text = ''
     @import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");
 
     window, .background {
@@ -62,6 +74,31 @@ in
       border-radius: 6px;
       font-weight: bold;
     }
+
+    /* Sliders (the volume popup) */
+    label { color: #cdd6f4; font-family: "Inter"; font-size: 10pt; }
+    scale { padding: 6px 4px; }
+    scale trough {
+      background-color: #313244;
+      border: none;
+      border-radius: 6px;
+      min-height: 8px;
+    }
+    scale highlight {
+      background-color: #89b4fa;
+      border: none;
+      border-radius: 6px;
+    }
+    scale slider {
+      background-color: #b4befe;
+      background-image: none; /* Adwaita's gradient would hide the colour */
+      border: 2px solid #1e1e2e;
+      border-radius: 50%;
+      min-width: 16px;
+      min-height: 16px;
+      box-shadow: none;
+    }
+    scale value { color: #cdd6f4; font-family: "Inter"; }
   '';
   xdg.configFile."gsimplecal/config".text = ''
     show_calendar = 1
@@ -200,8 +237,11 @@ in
           "󰖀"
           "󰕾"
         ];
-        on-click = "pavucontrol";
-        on-click-right = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+        # Click: volume slider; right-click: the full mixer; middle-click:
+        # mute. Scrolling over it steps the volume.
+        on-click = "volume-popup";
+        on-click-right = "pavucontrol";
+        on-click-middle = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
       };
 
       # Shows an indicator when something is recording the screen or mic.

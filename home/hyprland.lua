@@ -245,6 +245,7 @@ hl.bind(shift("C"), exec("claude-pick"))
 -- Small popups are exempt and simply open over the pane.
 local pane_popups = {
   gsimplecal = true, -- the Waybar clock's calendar
+  yad = true,        -- the Waybar volume slider
 }
 hl.on("window.open", function(w)
   if not w or pane_popups[w.class] then return end
@@ -391,6 +392,16 @@ for name, sess in pairs(claude_sessions) do
     center    = true,
   })
 end
+
+-- The Waybar volume slider (volume-popup in home/waybar.nix), centred under
+-- the mouse, i.e. the volume icon that was clicked.
+hl.window_rule({
+  name  = "volume-popup",
+  match = { class = "^(yad)$", title = "^(Volume)$" },
+  float = true,
+  size  = "300 120", -- about the height GTK needs for label + value + slider
+  move  = "(cursor_x-150) 40",
+})
 
 -- The Waybar clock's calendar (calendar-popup in home/waybar.nix): centred
 -- just under the bar.
