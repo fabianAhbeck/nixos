@@ -61,6 +61,19 @@
   boot.resumeDevice = "/dev/mapper/cryptroot";
 
   ###########################################################################
+  # Bluetooth audio
+  ###########################################################################
+
+  # The AX201's Bluetooth turns headset-mode audio with the mSBC codec into
+  # pure static (tested with Bose QC Ultra 2 earbuds: mSBC static, CVSD
+  # clean). Headset mode is what apps like Discord switch to for the
+  # earbuds' mic, so offer only CVSD there: narrowband but clear. Music
+  # stays on A2DP (AAC) and is unaffected.
+  services.pipewire.wireplumber.extraConfig."10-disable-msbc" = {
+    "monitor.bluez.properties"."bluez5.enable-msbc" = false;
+  };
+
+  ###########################################################################
   # Home VPN
   ###########################################################################
 
