@@ -18,6 +18,7 @@ in
     ./waybar.nix
     ./shell.nix
     ./speech.nix
+    ./bose.nix
   ];
 
   home.username = "fabian";

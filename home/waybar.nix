@@ -143,6 +143,7 @@ in
         "tray"
         "privacy"
         "pulseaudio"
+        "custom/bose"
         "bluetooth"
         "network"
         "cpu"
@@ -317,6 +318,7 @@ in
       #pulseaudio,
       #privacy,
       #custom-power,
+      #custom-bose,
       #tray {
         padding: 0 10px;
       }
