@@ -27,12 +27,13 @@ let
   waybar-bose = pkgs.writeShellApplication {
     name = "waybar-bose";
     runtimeInputs = with pkgs; [
-      bosectl
       bluez
-      jq
-      gawk
-      gnused
+      python3
     ];
+    runtimeEnv = {
+      WAYBAR_BOSE_PY = ./scripts/waybar-bose.py;
+      PYTHONPATH = "${bosectl}/share/bosectl/python"; # pybmap
+    };
     text = builtins.readFile ./scripts/waybar-bose.sh;
   };
 
@@ -41,7 +42,6 @@ let
     runtimeInputs = with pkgs; [
       bosectl
       wofi
-      gawk
       gnused
       procps
     ];

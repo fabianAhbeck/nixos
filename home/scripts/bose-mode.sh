@@ -2,8 +2,8 @@
 # `bose-mode menu` (pick any mode in wofi). Then refresh custom/bose.
 case "${1:-toggle}" in
   toggle)
-    current=$(timeout 15 bosectl status 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' |
-      awk '$1 == "Mode" { print $2; exit }' || true)
+    # `current` asks one question (~0.3 s); `status` would ask ~14 (~2.3 s).
+    current=$(timeout 15 bosectl current 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' || true)
     if [ "$current" = quiet ]; then new=aware; else new=quiet; fi
     ;;
   menu)
