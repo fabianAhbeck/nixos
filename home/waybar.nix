@@ -30,6 +30,14 @@ in
     pkgs.mission-center
     pkgs.gsimplecal
     (pkgs.writeShellScriptBin "calendar-popup" ''
+      # Skip a click on the bar icon that just closed this popup from the outside
+      # (hyprland.lua closes bar popups on clicks outside them).
+      closed="''${XDG_RUNTIME_DIR:-/tmp}/bar-popup-closed"
+      if [ -f "$closed" ] &&
+        [ $(($(date +%s%3N) - $(LC_ALL=C stat -c %.3Y "$closed" | tr -d .))) -lt 1000 ]; then
+        exit 0
+      fi
+
       if pgrep -x gsimplecal >/dev/null; then
         exec gsimplecal # a second instance closes the first
       fi

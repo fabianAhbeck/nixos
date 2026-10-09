@@ -264,6 +264,27 @@ hl.on("window.open", function(w)
   end, { timeout = 1, type = "oneshot" })
 end)
 
+-- The bar popups (the same classes) also close when you click anywhere
+-- outside them: the desktop, Waybar or another window, which wouldn't move
+-- keyboard focus. The click itself still goes through. A clicked popup icon
+-- would reopen it straight away, so leave a timestamp that its toggle
+-- script (calendar-popup / volume-popup) checks first.
+local popup_closed_file = (os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/bar-popup-closed"
+hl.bind("mouse:272", function()
+  local c = hl.get_cursor_pos()
+  if not c then return end
+  for class in pairs(pane_popups) do
+    for _, w in ipairs(hl.get_windows({ class = class })) do
+      local a, s = w.at, w.size
+      if c.x < a.x or c.x > a.x + s.x or c.y < a.y or c.y > a.y + s.y then
+        hl.dispatch(hl.dsp.window.close({ window = w }))
+        local f = io.open(popup_closed_file, "w")
+        if f then f:close() end
+      end
+    end
+  end
+end, { non_consuming = true })
+
 -- SUPER + plus / minus: step the focused monitor's scale through values
 -- that divide its resolution evenly (so text stays sharp), with a swayosd
 -- popup. Floating Claude windows keep their pixel size across a scale
