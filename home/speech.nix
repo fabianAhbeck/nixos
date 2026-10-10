@@ -5,22 +5,24 @@
 { pkgs, ... }:
 let
   # Official Piper voices: https://huggingface.co/rhasspy/piper-voices.
+  # jenny_dioco (British English, female), picked from a listening test
+  # against lessac, ryan, cori, amy, alan, alba, northern_english_male, vctk.
   # Piper looks for <voice>.onnx.json next to the model, so both go in one
   # directory.
-  voiceUrl = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium";
-  voice = pkgs.linkFarm "piper-voice-en_US-lessac-medium" [
+  voiceUrl = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_GB/jenny_dioco/medium";
+  voice = pkgs.linkFarm "piper-voice-en_GB-jenny_dioco-medium" [
     {
-      name = "en_US-lessac-medium.onnx";
+      name = "en_GB-jenny_dioco-medium.onnx";
       path = pkgs.fetchurl {
-        url = "${voiceUrl}/en_US-lessac-medium.onnx";
-        hash = "sha256-Xv4J5pkCGHgnr2RuGm6dJp3udp+Yd9F7FrG0buqvAZ8=";
+        url = "${voiceUrl}/en_GB-jenny_dioco-medium.onnx";
+        hash = "sha256-RpxjDSCeE53TkqZr9KveSrhjkKAmnB5HtOXXzoFSawE=";
       };
     }
     {
-      name = "en_US-lessac-medium.onnx.json";
+      name = "en_GB-jenny_dioco-medium.onnx.json";
       path = pkgs.fetchurl {
-        url = "${voiceUrl}/en_US-lessac-medium.onnx.json";
-        hash = "sha256-7+GcQXvtBV8taZCCSMa6ZQ+hNbyGiw5quz2hgdq2kKA=";
+        url = "${voiceUrl}/en_GB-jenny_dioco-medium.onnx.json";
+        hash = "sha256-qaepOjF8mjy2Vj436wV9+e8JwGGIqKQ0Gw/LWMulTdQ=";
       };
     }
   ];
@@ -35,7 +37,7 @@ let
       util-linux # setsid
     ];
     runtimeEnv = {
-      VOICE = "${voice}/en_US-lessac-medium.onnx";
+      VOICE = "${voice}/en_GB-jenny_dioco-medium.onnx";
       RATE = "22050"; # audio.sample_rate in the voice's .onnx.json
     };
     text = builtins.readFile ./scripts/speak-selection.sh;
