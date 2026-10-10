@@ -160,6 +160,16 @@
     MemorySleepMode = "deep";
     HibernateDelaySec = "2h";
   };
+  # Battery running out: UPower hibernates at 3% instead of letting the
+  # laptop die (home/battery.nix warns at 15% and 5% first).
+  services.upower = {
+    enable = true;
+    percentageLow = 15;
+    percentageCritical = 5;
+    percentageAction = 3;
+    criticalPowerAction = "Hibernate";
+  };
+
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend-then-hibernate";
     HandleLidSwitchExternalPower = "suspend";

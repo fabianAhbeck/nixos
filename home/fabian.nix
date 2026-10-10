@@ -19,6 +19,7 @@ in
     ./shell.nix
     ./speech.nix
     ./bose.nix
+    ./battery.nix
   ];
 
   home.username = "fabian";
@@ -133,6 +134,12 @@ in
       background-color = "#1e1e2ee6";
       text-color = "#cdd6f4";
       border-color = "#89b4fa";
+
+      # Critical notifications (e.g. battery at 5%) stay until dismissed.
+      "urgency=critical" = {
+        default-timeout = 0;
+        border-color = "#f38ba8";
+      };
     };
   };
 
