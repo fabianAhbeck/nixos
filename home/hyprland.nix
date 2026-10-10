@@ -91,6 +91,12 @@ in
       # Copying: tmux passes selections to kitty as OSC 52, which puts them on
       # the laptop's clipboard (xterm-256color doesn't advertise it itself).
       remote+=" \; set -s set-clipboard on \; set -as terminal-features ',xterm-256color:clipboard'"
+      # Native-feeling selection: releasing a drag copies but keeps the text
+      # marked (instead of copy-and-cancel); a click returns to live output.
+      for table in copy-mode copy-mode-vi; do
+        remote+=" \; bind -T $table MouseDragEnd1Pane send -X copy-pipe-no-clear"
+        remote+=" \; bind -T $table MouseDown1Pane send -X cancel"
+      done
       while true; do
         # kitty's own TERM isn't known on the far side.
         TERM=xterm-256color ssh -t -o ControlMaster=no -o ConnectTimeout=10 \
