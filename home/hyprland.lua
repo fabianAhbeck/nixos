@@ -139,6 +139,7 @@ hl.bind(key("W"), exec(browser))
 hl.bind(shift("D"), exec("discord")) -- single instance: raises it if already open
 hl.bind(key("E"), exec("nautilus"))
 hl.bind(key("N"), exec("networkmanager_dmenu")) -- Wi-Fi / VPN menu
+hl.bind(key("B"), exec("bt-menu")) -- Bluetooth: connect / disconnect paired devices
 hl.bind(key("A"), exec("speak-selection")) -- read the selection aloud; again to stop
 hl.bind(key("V"), exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
 

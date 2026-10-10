@@ -17,6 +17,16 @@ in
   # Adwaita-dark.
   home.packages = [
     (pkgs.writeShellApplication {
+      name = "bt-menu";
+      runtimeInputs = with pkgs; [
+        bluez
+        wofi
+        libnotify
+        procps
+      ];
+      text = builtins.readFile ./scripts/bt-menu.sh;
+    })
+    (pkgs.writeShellApplication {
       name = "volume-popup";
       runtimeInputs = with pkgs; [
         yad
@@ -235,7 +245,8 @@ in
         format-disabled = "";
         format-connected = "󰂱 {num_connections}";
         tooltip-format-connected = "{device_enumerate}";
-        on-click = "blueman-manager";
+        on-click = "bt-menu"; # paired devices: connect / disconnect
+        on-click-right = "blueman-manager";
       };
 
       pulseaudio = {

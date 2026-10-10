@@ -14,6 +14,7 @@ them. `SUPER` is the Windows key.
 | `SUPER + SHIFT + D` | Discord |
 | `SUPER + E` | File manager (Nautilus) |
 | `SUPER + N` | Wi-Fi / VPN menu (also: click the network icon in Waybar; right-click for the full editor) |
+| `SUPER + B` | Bluetooth menu: connect / disconnect paired devices, on/off (also: click the Bluetooth icon; right-click for blueman) |
 | `SUPER + A` | Read the highlighted text (or the clipboard) aloud, locally with Piper; press again to stop |
 | `SUPER + V` | Clipboard history, pick an entry to copy it |
 | `SUPER + C` | Show/hide Claude Code: the session you used last (nixos by default). Each resumes its repo's last conversation |
