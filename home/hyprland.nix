@@ -88,6 +88,9 @@ in
       remote="tmux new-session -A -s $session -c $dir '$cmd'"
       remote+=" \; set -g mouse on \; set -g status off \; set -sg escape-time 10"
       remote+=" \; set -g history-limit 50000 \; set -as terminal-features ',xterm-256color:RGB'"
+      # Copying: tmux passes selections to kitty as OSC 52, which puts them on
+      # the laptop's clipboard (xterm-256color doesn't advertise it itself).
+      remote+=" \; set -s set-clipboard on \; set -as terminal-features ',xterm-256color:clipboard'"
       while true; do
         # kitty's own TERM isn't known on the far side.
         TERM=xterm-256color ssh -t -o ControlMaster=no -o ConnectTimeout=10 \
