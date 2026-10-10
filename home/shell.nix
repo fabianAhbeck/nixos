@@ -118,11 +118,6 @@
     # Home Manager's implicit defaults are going away, so spell them out.
     # Note `settings` uses ssh_config's own capitalised key names.
     enableDefaultConfig = false;
-    # Password login only, never offer keys (including agent keys).
-    settings."10.0.20.10" = {
-      PubkeyAuthentication = "no";
-      PreferredAuthentications = "password,keyboard-interactive";
-    };
     settings."*" = {
       # Reuse connections; makes repeated git pushes over SSH much faster.
       ControlMaster = "auto";
