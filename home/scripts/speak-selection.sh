@@ -14,8 +14,17 @@ if [ -f "$pgid_file" ]; then
   fi
 fi
 
-text=$(wl-paste --primary --no-newline 2>/dev/null || true)
-[ -n "$text" ] || text=$(wl-paste --no-newline 2>/dev/null || true)
+# Normally the highlighted text (primary selection), else the clipboard. In
+# a remote Claude pane (tmux over ssh) a mouse selection never reaches the
+# primary selection, but tmux sends it to the laptop clipboard (OSC 52), so
+# there read the clipboard first.
+active=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // empty' || true)
+if [[ " $REMOTE_PANES " == *" $active "* ]]; then
+  text=$(wl-paste --no-newline 2>/dev/null || true)
+else
+  text=$(wl-paste --primary --no-newline 2>/dev/null || true)
+  [ -n "$text" ] || text=$(wl-paste --no-newline 2>/dev/null || true)
+fi
 if [ -z "$text" ]; then
   notify-send -a speak -t 3000 "Nothing to read" "Select some text first."
   exit 0

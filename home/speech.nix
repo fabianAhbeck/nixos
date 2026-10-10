@@ -35,10 +35,15 @@ let
       wl-clipboard
       libnotify
       util-linux # setsid
+      hyprland # hyprctl: which window is focused
+      jq
     ];
     runtimeEnv = {
       VOICE = "${voice}/en_GB-jenny_dioco-medium.onnx";
       RATE = "22050"; # audio.sample_rate in the voice's .onnx.json
+      # Window classes of Claude panes running remotely in tmux (the
+      # sessions with `remote` in hyprland.lua): read the clipboard there.
+      REMOTE_PANES = "claude-homelab";
     };
     text = builtins.readFile ./scripts/speak-selection.sh;
   };
