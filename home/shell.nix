@@ -118,6 +118,11 @@
     # Home Manager's implicit defaults are going away, so spell them out.
     # Note `settings` uses ssh_config's own capitalised key names.
     enableDefaultConfig = false;
+    # No connection sharing with this host: every ssh opens its own connection.
+    settings."10.0.20.10" = {
+      ControlMaster = "no";
+      ControlPath = "none";
+    };
     settings."*" = {
       # Reuse connections; makes repeated git pushes over SSH much faster.
       ControlMaster = "auto";
