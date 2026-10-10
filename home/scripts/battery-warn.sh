@@ -1,10 +1,21 @@
 # Low-battery pop-ups: once at 15%, again (critical, stays until dismissed)
-# at 5%. Plugging in resets them. Run every minute by battery-warn.timer.
+# at 5%. Plugging in resets them. Also turns Hyprland's window blur off on
+# battery and back on when charging (the GPU recomputes blur on every
+# redraw). Run every minute by battery-warn.timer.
 bat=$(find /sys/class/power_supply -maxdepth 1 -name 'BAT*' | head -1)
 [ -n "$bat" ] || exit 0
 capacity=$(cat "$bat/capacity")
 status=$(cat "$bat/status")
 warned="${XDG_RUNTIME_DIR:-/tmp}/battery-warned" # last level warned about
+
+# Blur: on unless discharging. Only tell Hyprland when the state changes.
+blur_state="${XDG_RUNTIME_DIR:-/tmp}/battery-blur"
+want=true
+[ "$status" = Discharging ] && want=false
+if [ "$(cat "$blur_state" 2>/dev/null)" != "$want" ] &&
+  hyprctl dispatch "(function() hl.config({ decoration = { blur = { enabled = $want } } }) end)" >/dev/null 2>&1; then
+  echo "$want" >"$blur_state"
+fi
 
 if [ "$status" != Discharging ]; then
   rm -f "$warned"

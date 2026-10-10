@@ -55,11 +55,12 @@ in
   ];
 
   # Listed in modules-right in waybar.nix. Hidden while no Bose device is
-  # connected; refreshed every 30 s and right after bose-mode (signal 8).
+  # connected; refreshed every 2 minutes (each refresh wakes both Bluetooth
+  # radios) and right after bose-mode (signal 8).
   programs.waybar.settings.mainBar."custom/bose" = {
     exec = "${waybar-bose}/bin/waybar-bose";
     return-type = "json";
-    interval = 30;
+    interval = 120;
     signal = 8;
     on-click = "bose-mode toggle";
     on-click-right = "bose-mode menu";

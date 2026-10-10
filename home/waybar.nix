@@ -196,7 +196,7 @@ in
           }
         );
         return-type = "json";
-        interval = 5;
+        interval = 15; # each run reads every sensor; 15 s is plenty
         format = " {}";
         on-click = missionCenter;
       };

@@ -1,5 +1,5 @@
-# Low-battery warnings on laptops (my.laptop): a pop-up at 15% and a
-# critical one at 5%. At 3% UPower hibernates (hosts/<name>/default.nix).
+# Laptops (my.laptop): low-battery pop-ups at 15% and 5%, and window blur
+# only while charging. At 3% UPower hibernates (hosts/<name>/default.nix).
 {
   lib,
   osConfig,
@@ -9,7 +9,10 @@
 let
   battery-warn = pkgs.writeShellApplication {
     name = "battery-warn";
-    runtimeInputs = [ pkgs.libnotify ];
+    runtimeInputs = [
+      pkgs.libnotify
+      pkgs.hyprland # hyprctl, for blur on/off
+    ];
     text = builtins.readFile ./scripts/battery-warn.sh;
   };
 in

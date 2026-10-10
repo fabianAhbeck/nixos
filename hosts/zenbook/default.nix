@@ -144,6 +144,10 @@
       CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_power";
       PLATFORM_PROFILE_ON_AC = "performance";
       PLATFORM_PROFILE_ON_BAT = "low-power";
+      # No turbo boost on battery: short bursts run a little slower, but the
+      # CPU stays cooler and draws far less.
+      CPU_BOOST_ON_BAT = 0;
+      CPU_HWP_DYN_BOOST_ON_BAT = 0;
       # The charge threshold is handled by hardware.asus.battery above; don't
       # let TLP fight it.
       RUNTIME_PM_ON_AC = "auto";
