@@ -192,7 +192,7 @@ local claude_sessions = {
   -- Runs on the homelab's Claude VM over ssh, inside tmux (claude-remote in
   -- hyprland.nix), so a dropped connection doesn't end the session.
   homelab  = { class = "claude-homelab",  ws = "claude-homelab",
-               remote = "claude@10.0.20.203", dir = "/home/claude/Project" },
+               remote = "claude@10.0.20.40", dir = "/home/claude/Project" },
 }
 
 local claude_last = "nixos"
