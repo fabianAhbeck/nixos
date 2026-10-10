@@ -28,7 +28,7 @@
       ll = "eza -l --group-directories-first --git";
       la = "eza -la --group-directories-first --git";
       lt = "eza --tree --level=2";
-      cat = "bat";
+      cat = "bat --style=plain --paging=never"; # copyable output; `bat` keeps numbers
 
       k = "kubectl";
       kx = "kubectx";
