@@ -20,11 +20,13 @@ local browser  = "firefox"
 
 -- XWayland apps (Steam, X11 games) can't do fractional scaling, so at 1.25
 -- Hyprland would render them at 1.0 and stretch them: blurry text. Don't
--- stretch them; Steam instead scales its own UI to the primary monitor's
--- scale (games render at the real resolution). Other X11 apps look small.
+-- stretch them (games render at the real resolution); instead tell X11
+-- apps the density through Xft.dpi (96 = 1.0), which Steam scales its UI
+-- by. Set at startup below. (Steam ignores STEAM_FORCE_DESKTOPUI_SCALING
+-- and -forcedesktopscaling here; tested.)
 hl.config({ xwayland = { force_zero_scaling = true } })
 local primary_scale = (host.monitors[1] and host.monitors[1].scale) or 1
-hl.env("STEAM_FORCE_DESKTOPUI_SCALING", tostring(primary_scale))
+local xft_dpi = math.floor(96 * primary_scale + 0.5)
 
 -- gcr-ssh-agent (from gnome-keyring) is running, but nothing points SSH at
 -- it. Setting it here covers every shell and GUI app launched from Hyprland.
@@ -46,6 +48,9 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 -- Startup
 ---------------------------------------------------------------------------
 hl.on("hyprland.start", function()
+  -- Xft.dpi for XWayland (see the top); retry while XWayland comes up.
+  hl.exec_cmd("for i in $(seq 20); do echo 'Xft.dpi: " .. xft_dpi
+    .. "' | xrdb -merge 2>/dev/null && break; sleep 0.5; done")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
   hl.exec_cmd("awww-daemon")
   hl.exec_cmd("wallpaper --init") -- default image on first login only
