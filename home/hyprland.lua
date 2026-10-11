@@ -18,6 +18,14 @@ local terminal = "kitty"
 local menu     = "wofi --show drun"
 local browser  = "firefox"
 
+-- XWayland apps (Steam, X11 games) can't do fractional scaling, so at 1.25
+-- Hyprland would render them at 1.0 and stretch them: blurry text. Don't
+-- stretch them; Steam instead scales its own UI to the primary monitor's
+-- scale (games render at the real resolution). Other X11 apps look small.
+hl.config({ xwayland = { force_zero_scaling = true } })
+local primary_scale = (host.monitors[1] and host.monitors[1].scale) or 1
+hl.env("STEAM_FORCE_DESKTOPUI_SCALING", tostring(primary_scale))
+
 -- gcr-ssh-agent (from gnome-keyring) is running, but nothing points SSH at
 -- it. Setting it here covers every shell and GUI app launched from Hyprland.
 hl.env("SSH_AUTH_SOCK", os.getenv("XDG_RUNTIME_DIR") .. "/gcr/ssh")
