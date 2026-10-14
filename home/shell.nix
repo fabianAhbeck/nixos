@@ -147,7 +147,9 @@
 
     # `update`: newest flake inputs, rebuild, then commit and push
     # flake.lock, so the repo always records what's running. A failed or
-    # cancelled rebuild puts the old flake.lock back.
+    # cancelled rebuild puts the old flake.lock back -- unless the new
+    # system did go live and only a service failed to restart during the
+    # switch: then flake.lock is kept, and `rebuild` finishes the job.
     (pkgs.writeShellScriptBin "update" ''
       set -e
       cd ${osConfig.my.repos.nixos}
@@ -156,7 +158,12 @@
         echo "Already up to date."
         exit 0
       fi
-      if ! ${pkgs.nh}/bin/nh os switch . "$@"; then
+      status=0
+      ${pkgs.nh}/bin/nh os switch . "$@" || status=$?
+      # nixos-version ends in nixpkgs' short rev: 26.11.20261011.7fd4004
+      running=$(cut -d. -f4 /run/current-system/nixos-version)
+      new=$(${pkgs.jq}/bin/jq -r '.nodes[.nodes.root.inputs.nixpkgs].locked.rev' flake.lock)
+      if [ "$status" -ne 0 ] && [[ $new != "$running"* ]]; then
         git checkout flake.lock
         echo "Rebuild failed; flake.lock is back to what's running." >&2
         exit 1
@@ -164,6 +171,11 @@
       git commit -q -m "Update flake inputs" flake.lock
       ${pkgs.procps}/bin/pkill -RTMIN+9 waybar || true # clear the bar reminder
       git push -q || echo "Committed, but the push failed; push later." >&2
+      if [ "$status" -ne 0 ]; then
+        echo "The new system is running, but the switch reported an error" \
+          "(above). Run \`rebuild\` to make it the boot default." >&2
+        exit 1
+      fi
     '')
   ];
 }
