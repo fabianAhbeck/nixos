@@ -24,9 +24,14 @@
 
     nodejs_22
     pnpm
-    # typescript-language-server: out until nixos-unstable has nixpkgs
-    # ac7b1aaed0 ("fix pnpm hash", 2026-10-11); 6.0.2's dependency hash is
-    # wrong and fails every rebuild. Put it back after the next `update`.
+    # 6.0.2's pnpm dependency hash is wrong in nixpkgs before ac7b1aaed0
+    # ("fix pnpm hash", 2026-10-11), which fails every rebuild; this is
+    # the same fix. Drop the override once nixos-unstable has it.
+    (typescript-language-server.overrideAttrs (old: {
+      pnpmDeps = old.pnpmDeps.overrideAttrs {
+        outputHash = "sha256-xR/EF60lVBsITKgH7wCM2wHM46PFQevD51KfCENSUH4=";
+      };
+    }))
 
     (python3.withPackages (
       ps: with ps; [
