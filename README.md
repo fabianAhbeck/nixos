@@ -19,7 +19,7 @@ Keybindings and handy commands: [KEYBINDINGS.md](KEYBINDINGS.md).
 | `rebuild` | the same in a terminal (`nh os switch`) |
 | `rebuild-test` | apply without adding a boot entry |
 | `rebuild-boot` | only on next boot — use this when changing the greeter, which a live switch can't restart safely |
-| `update` | `nix flake update`, then rebuild |
+| `update` | `nix flake update`, rebuild, then commit and push `flake.lock`; a failed rebuild puts the old one back |
 | `gc` | delete old generations now (also runs weekly, keeping the last 5 and anything from the last 30 days) |
 | `nvd diff /run/current-system result` | what changed between two builds |
 

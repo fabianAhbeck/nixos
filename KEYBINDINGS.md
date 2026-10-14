@@ -82,7 +82,7 @@ These work on the lock screen too; volume and brightness repeat while held.
 | --- | --- |
 | `rebuild` | Build and switch to the config in this repo |
 | `rebuild-test` / `rebuild-boot` | Switch without a boot entry / only on next boot |
-| `update` | Update flake inputs (then `rebuild`) |
+| `update` | Update flake inputs, rebuild, commit and push `flake.lock` |
 | `gc` | Delete old generations now (also runs weekly) |
 | `wallpaper <image>` | Set the wallpaper; it is restored at every login |
 | `powermenu` | The power menu, from a terminal |

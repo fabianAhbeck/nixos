@@ -18,10 +18,9 @@
 
     shellAliases = {
       # nh wraps nixos-rebuild with a progress view and a generation diff.
-      # `rebuild` itself is a script (see home.packages below).
+      # `rebuild` and `update` are scripts (see home.packages below).
       rebuild-boot = "nh os boot";
       rebuild-test = "nh os test";
-      update = "nix flake update --flake ${osConfig.my.repos.nixos}";
       gc = "nh clean all --keep 5 --keep-since 30d";
 
       ls = "eza --group-directories-first";
@@ -144,6 +143,26 @@
   home.packages = [
     (pkgs.writeShellScriptBin "rebuild" ''
       exec ${pkgs.nh}/bin/nh os switch ${osConfig.my.repos.nixos} "$@"
+    '')
+
+    # `update`: newest flake inputs, rebuild, then commit and push
+    # flake.lock, so the repo always records what's running. A failed or
+    # cancelled rebuild puts the old flake.lock back.
+    (pkgs.writeShellScriptBin "update" ''
+      set -e
+      cd ${osConfig.my.repos.nixos}
+      nix flake update
+      if git diff --quiet flake.lock; then
+        echo "Already up to date."
+        exit 0
+      fi
+      if ! ${pkgs.nh}/bin/nh os switch . "$@"; then
+        git checkout flake.lock
+        echo "Rebuild failed; flake.lock is back to what's running." >&2
+        exit 1
+      fi
+      git commit -q -m "Update flake inputs" flake.lock
+      git push -q || echo "Committed, but the push failed; push later." >&2
     '')
   ];
 }
