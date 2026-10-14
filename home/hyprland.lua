@@ -461,6 +461,27 @@ hl.window_rule({
   float = true,
 })
 
+-- Home workspaces: terminals on 1, Firefox on 2, Steam on 4. New windows
+-- open there and the view follows. Only plain kitty: the Claude panes and
+-- the rebuild log have their own classes.
+hl.window_rule({
+  name      = "home-terminal",
+  match     = { class = "^(kitty)$" },
+  workspace = "1",
+})
+
+hl.window_rule({
+  name      = "home-firefox",
+  match     = { class = "^(firefox)$" },
+  workspace = "2",
+})
+
+hl.window_rule({
+  name      = "home-steam",
+  match     = { class = "^(steam)$" },
+  workspace = "4",
+})
+
 -- Games get their own workspace, no gaps, no border.
 hl.window_rule({
   name       = "steam-games",
