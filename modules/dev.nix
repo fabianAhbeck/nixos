@@ -24,7 +24,9 @@
 
     nodejs_22
     pnpm
-    typescript-language-server
+    # typescript-language-server: out until nixos-unstable has nixpkgs
+    # ac7b1aaed0 ("fix pnpm hash", 2026-10-11); 6.0.2's dependency hash is
+    # wrong and fails every rebuild. Put it back after the next `update`.
 
     (python3.withPackages (
       ps: with ps; [
