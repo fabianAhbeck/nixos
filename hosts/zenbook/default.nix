@@ -173,6 +173,66 @@
     '';
   };
 
+  # Temperature log: every 5 s, the CPU package temperature, package power
+  # and whether we're on AC, one CSV per day in /var/log/temp-log (kept 30
+  # days). Root because the RAPL energy counter is root-only. `temps`
+  # summarises it per day.
+  systemd.services.temp-log = {
+    description = "Log CPU temperature and power";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Restart = "always";
+    script = ''
+      dir=/var/log/temp-log
+      for z in /sys/class/thermal/thermal_zone*; do
+        [ "$(cat "$z/type")" = x86_pkg_temp ] && temp=$z/temp
+      done
+      energy=/sys/class/powercap/intel-rapl:0/energy_uj
+      range=$(cat /sys/class/powercap/intel-rapl:0/max_energy_range_uj)
+      last=$(cat "$energy") last_t=$(date +%s%N)
+      while sleep 5; do
+        now=$(cat "$energy") now_t=$(date +%s%N)
+        # The counter wraps; after resume the gap is long, which only
+        # averages the power down, never up.
+        d=$(( (now - last + range) % range ))
+        watts=$(( d * 10000 / (now_t - last_t) ))  # µJ/ns -> tenths of W
+        last=$now last_t=$now_t
+        ac=1; [ "$(cat /sys/class/power_supply/BAT0/status)" = Discharging ] && ac=0
+        f=$dir/$(date +%F).csv
+        [ -e "$f" ] || echo time,temp_c,watts,ac > "$f"
+        printf '%s,%d,%d.%d,%d\n' "$(date +%T)" $(( $(cat "$temp") / 1000 )) \
+          $((watts / 10)) $((watts % 10)) $ac >> "$f"
+      done
+    '';
+  };
+  systemd.tmpfiles.rules = [ "d /var/log/temp-log 0755 root root 30d" ];
+
+  environment.systemPackages = [
+    (pkgs.writeShellApplication {
+      name = "temps";
+      runtimeInputs = [ pkgs.gawk ];
+      text = ''
+        # Per-day summary of /var/log/temp-log: `temps` for the last 7
+        # days, `temps 30` for more.
+        days=''${1:-7}
+        printf '%-10s  %5s  %8s  %5s  %5s  %5s  %6s\n' \
+          day peak "at" ">=85" ">=90" ">=95" "max W"
+        shopt -s nullglob
+        files=(/var/log/temp-log/*.csv)
+        start=$(( ''${#files[@]} > days ? ''${#files[@]} - days : 0 ))
+        for f in "''${files[@]:start}"; do
+          awk -F, -v day="$(basename "$f" .csv)" '
+            NR == 1 { next }
+            $2 > peak { peak = $2; at = $1 }
+            $2 >= 85 { h85++ } $2 >= 90 { h90++ } $2 >= 95 { h95++ }
+            $3 > maxw { maxw = $3 }
+            # samples are 5 s apart; show minutes
+            END { printf "%-10s  %4d°  %8s  %4dm  %4dm  %4dm  %6.1f\n",
+                  day, peak, at, h85/12, h90/12, h95/12, maxw }' "$f"
+        done
+      '';
+    })
+  ];
+
   # Sleep. The firmware defaults to s2idle ("modern standby"), which keeps
   # much of a Tiger Lake system half awake and drains several % an hour;
   # deep (S3, suspend-to-RAM) powers almost everything down. On battery, lid
