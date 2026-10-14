@@ -155,6 +155,24 @@
     };
   };
 
+  # Sustained CPU power limit 20 W instead of the firmware's 25 W (MSR) /
+  # 28 W (MMIO): gaming on AC reached the mid 90s °C with the fan already
+  # at its maximum profile. Bursts keep the firmware's 42 W. The limit
+  # covers the whole package, Iris Xe GPU included. Both RAPL interfaces
+  # are set, since the lower one wins; again after resume, which can reset
+  # them.
+  systemd.services.cpu-power-limit = {
+    description = "Lower the sustained CPU power limit";
+    wantedBy = [ "multi-user.target" "post-resume.target" ];
+    after = [ "post-resume.target" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for zone in /sys/class/powercap/intel-rapl:0 /sys/class/powercap/intel-rapl-mmio:0; do
+        echo 20000000 > "$zone/constraint_0_power_limit_uw"
+      done
+    '';
+  };
+
   # Sleep. The firmware defaults to s2idle ("modern standby"), which keeps
   # much of a Tiger Lake system half awake and drains several % an hour;
   # deep (S3, suspend-to-RAM) powers almost everything down. On battery, lid
