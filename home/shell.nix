@@ -162,6 +162,7 @@
         exit 1
       fi
       git commit -q -m "Update flake inputs" flake.lock
+      ${pkgs.procps}/bin/pkill -RTMIN+9 waybar || true # clear the bar reminder
       git push -q || echo "Committed, but the push failed; push later." >&2
     '')
   ];

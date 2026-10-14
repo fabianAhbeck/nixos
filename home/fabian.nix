@@ -20,6 +20,7 @@ in
     ./speech.nix
     ./bose.nix
     ./battery.nix
+    ./update-reminder.nix
   ];
 
   home.username = "fabian";

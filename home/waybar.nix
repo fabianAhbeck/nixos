@@ -150,6 +150,7 @@ in
       ];
       modules-center = [ "clock" ];
       modules-right = [
+        "custom/update"
         "tray"
         "privacy"
         "pulseaudio"
@@ -330,6 +331,7 @@ in
       #privacy,
       #custom-power,
       #custom-bose,
+      #custom-update,
       #tray {
         padding: 0 10px;
       }
@@ -351,6 +353,7 @@ in
       #battery.warning  { color: #f9e2af; }
       #battery.critical { color: #f38ba8; }
       #custom-temps.critical { color: #f38ba8; }
+      #custom-update.stale { color: #f9e2af; }
       #network.disconnected { color: #f38ba8; }
       #custom-power { color: #f38ba8; padding-right: 14px; }
     '';
