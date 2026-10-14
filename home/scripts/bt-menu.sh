@@ -4,6 +4,9 @@
 notify() { notify-send -a bluetooth -t 4000 "$@"; }
 connected() { bluetoothctl info "$1" | grep -m1 -q '^[[:space:]]*Connected: yes'; }
 powered() { bluetoothctl show | grep -q '^[[:space:]]*Powered: yes'; }
+# The radio can come up soft-blocked by rfkill after boot, and `power on`
+# fails while it is (SUPER+N's menu unblocks it, which is why that worked).
+power_on() { rfkill unblock bluetooth && sleep 0.5 && bluetoothctl power on >/dev/null; }
 
 declare -A mac_of
 entries=()
@@ -20,7 +23,9 @@ choice=$(printf '%s\n' "${entries[@]}" "$toggle" "Bluetooth settings…" |
     --cache-file /dev/null) || exit 0
 
 case "$choice" in
-  "Turn Bluetooth on") bluetoothctl power on >/dev/null && notify "Bluetooth on"; exit 0 ;;
+  "Turn Bluetooth on")
+    if power_on; then notify "Bluetooth on"; else notify -u critical "Couldn't turn Bluetooth on"; fi
+    exit 0 ;;
   "Turn Bluetooth off") bluetoothctl power off >/dev/null && notify "Bluetooth off"; exit 0 ;;
   "Bluetooth settings…") exec blueman-manager ;;
 esac
@@ -28,7 +33,7 @@ esac
 mac=${mac_of["$choice"]:-}
 [ -n "$mac" ] || exit 0
 name=${choice#*  }
-powered || bluetoothctl power on >/dev/null
+powered || power_on
 if connected "$mac"; then
   if timeout 15 bluetoothctl disconnect "$mac" >/dev/null; then
     notify "Disconnected" "$name"

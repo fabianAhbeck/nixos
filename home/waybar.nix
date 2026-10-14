@@ -23,6 +23,7 @@ in
         wofi
         libnotify
         procps
+        util-linux # rfkill
       ];
       text = builtins.readFile ./scripts/bt-menu.sh;
     })
