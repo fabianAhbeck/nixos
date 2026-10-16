@@ -59,6 +59,7 @@
 
     # Gaming
     protonup-qt
+    godot # game engine and editor
   ];
 
   programs.wireshark = {
