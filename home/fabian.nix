@@ -21,6 +21,7 @@ in
     ./bose.nix
     ./battery.nix
     ./update-reminder.nix
+    ./repos.nix
   ];
 
   home.username = "fabian";

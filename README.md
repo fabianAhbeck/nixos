@@ -33,6 +33,7 @@ rebuild: Nix builds from the git tree and silently ignores untracked files.
 
 ```
 flake.nix                 inputs; mkHost builds each machine from modules/ + hosts/<name>/
+installer/                the USB installer ISO and its install-nixos script
 hosts/<name>/             everything specific to one machine:
   default.nix             my.* values, GPU drivers, power, machine-only services
   disko.nix               declarative partitioning
@@ -51,6 +52,7 @@ home/                     Home Manager; reads my.* as osConfig.my
   hyprland.nix/.lua       compositor config and key bindings (gets a `host` table from my.*)
   waybar.nix              status bar, calendar popup, temperature module
   shell.nix               zsh, starship, fzf, tmux, aliases
+  repos.nix               clones this repo and dotfiles at login if they're missing
   scripts/                shell scripts built into the config
 ```
 
@@ -72,53 +74,52 @@ settings.
 
 ## Installing on a machine
 
-1. **Write a NixOS ISO to a USB stick.** The graphical ISO is easiest (browser,
-   GUI Wi-Fi). Its version doesn't matter: `nixos-install` builds from this
-   flake's pinned nixpkgs. Check the stick's device with `lsblk` right before
-   writing — `/dev/sdX` versus the internal disk is the difference between
-   losing a stick and losing the machine:
+The USB installer (`installer/`) is the minimal NixOS ISO plus
+`install-nixos`, which does the whole install for one of the hosts here.
+
+1. **Build the ISO and write it to a stick.** Check the stick's device with
+   `lsblk` right before writing — `/dev/sdX` versus the internal disk is the
+   difference between losing a stick and losing the machine:
 
    ```sh
-   sudo dd if=nixos-graphical-*.iso of=/dev/sdX bs=4M status=progress oflag=direct conv=fsync
+   nix build .#installer-iso
+   sudo dd if=result/iso/nixos-*.iso of=/dev/sdX bs=4M status=progress oflag=direct conv=fsync
    ```
+
+   The ISO doesn't need rebuilding when the config changes: the script clones
+   the repo's current `main`, and `nixos-install` builds from its pinned
+   nixpkgs. Rebuild it for a newer kernel (Wi-Fi drivers) or a changed script.
 
 2. **Boot it** from the firmware's boot menu, with Secure Boot off.
 
-3. **Install**, from a root shell on the live system:
+3. **Install:** `nmtui` to connect to Wi-Fi, then `sudo install-nixos`. It:
+   - clones the repo to `/tmp/nixos` and asks which host to install
+   - shows `lsblk` and the disk `hosts/<name>/disko.nix` will erase, and wipes
+     it only after you type the host name. Wrong disk: answer no, fix it in
+     `/tmp/nixos/hosts/<name>/disko.nix` and run it again (the clone is reused)
+   - partitions with disko, asking for the new LUKS passphrase
+   - writes `hardware-configuration.nix` from the real hardware and `git add`s it
+   - runs `nixos-install`, asks for fabian's password, copies the clone to
+     `~/Projects/nixos` and offers to reboot
 
-   ```sh
-   export NIX_CONFIG="experimental-features = nix-command flakes"
-   git clone https://github.com/fabianAhbeck/nixos /tmp/nixos && cd /tmp/nixos
-   lsblk                                    # confirm the target disk in hosts/<name>/disko.nix
-
-   # Partition, format, mount (prompts for the LUKS passphrase).
-   nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#<name>
-
-   # Probe the real hardware; --no-filesystems because disko owns those.
-   nixos-generate-config --no-filesystems --root /mnt
-   cp /mnt/etc/nixos/hardware-configuration.nix hosts/<name>/
-   git add -A
-
-   nixos-install --flake .#<name>
-   nixos-enter --root /mnt -c 'passwd fabian'
-   reboot
-   ```
-
-4. **After the first login:** add an SSH key to GitHub and point the clone at
-   `git@github.com:fabianAhbeck/nixos.git`; move it to `~/Projects/nixos`
-   (`my.repos.nixos`); then rebuild once.
+4. **After the first login:** `gh auth login` (it can upload a new SSH key),
+   then commit and push `hosts/<name>/hardware-configuration.nix` if the
+   install changed it. The clones fetch over HTTPS and push over SSH. The
+   dotfiles repo is cloned at login by `home/repos.nix` (as is this one, if
+   `~/Projects/nixos` is ever missing); homelab is private, so clone that by
+   hand once the key works.
 
 Things that bite:
 
 - **Always use the generated `hardware-configuration.nix`**, never one written
   for other hardware. zenbook's first committed copy lacked the `vmd` initrd
   module its NVMe sits behind, and every generation built from it hung before
-  the LUKS prompt.
-- **`passwd` before rebooting.** The user has no password in the config; skip
-  it and the greeter refuses the login until you boot the ISO again.
+  the LUKS prompt. `install-nixos` always regenerates it.
 - **The LUKS passphrase has no recovery.**
-- **`git add` the generated files.** Nix ignores untracked files in a git
-  tree; `nixos-install --flake path:/tmp/nixos#<name>` sidesteps that.
+- **A failed install** can be re-run from the start: it wipes and
+  partitions again. The user has no password in the config, so if the script
+  stops after `nixos-install`, run `nixos-enter --root /mnt -c 'passwd fabian'`
+  before rebooting, or the greeter refuses the login.
 
 ## Per-machine notes: zenbook
 

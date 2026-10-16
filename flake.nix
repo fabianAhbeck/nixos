@@ -19,6 +19,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       disko,
       home-manager,
@@ -44,6 +45,15 @@
     in
     {
       nixosConfigurations.zenbook = mkHost "zenbook";
+
+      # USB installer (installer/): `nix build .#installer-iso`, then write
+      # result/iso/*.iso to a stick. See "Installing on a machine" in README.md.
+      nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
+        modules = [ ./installer ];
+      };
+      packages.x86_64-linux.installer-iso =
+        self.nixosConfigurations.installer.config.system.build.isoImage;
 
       # Convenience: `nix fmt`
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;

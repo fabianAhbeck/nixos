@@ -163,7 +163,10 @@
   # them.
   systemd.services.cpu-power-limit = {
     description = "Lower the sustained CPU power limit";
-    wantedBy = [ "multi-user.target" "post-resume.target" ];
+    wantedBy = [
+      "multi-user.target"
+      "post-resume.target"
+    ];
     after = [ "post-resume.target" ];
     serviceConfig.Type = "oneshot";
     script = ''

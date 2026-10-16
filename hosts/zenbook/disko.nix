@@ -13,8 +13,7 @@
 #           ├─ @log       -> /var/log
 #           ├─ @snapshots -> /.snapshots
 #           └─ @swap      -> /swap/swapfile (34G, sized for hibernate)
-_:
-{
+_: {
   disko.devices.disk.main = {
     # Verify with `lsblk` before installing -- on the live ISO this should
     # still be nvme0n1, but check rather than assume.
