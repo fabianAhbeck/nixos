@@ -83,7 +83,8 @@ The USB installer (`installer/`) is the minimal NixOS ISO plus
 
    ```sh
    nix build .#installer-iso
-   sudo dd if=result/iso/nixos-*.iso of=/dev/sdX bs=4M status=progress oflag=direct conv=fsync
+   iso=(result/iso/*.iso)   # the glob doesn't expand inside if=...
+   sudo dd if=$iso of=/dev/sdX bs=4M status=progress oflag=direct conv=fsync
    ```
 
    The ISO doesn't need rebuilding when the config changes: the script clones
