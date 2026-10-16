@@ -151,6 +151,7 @@ in
       ];
       modules-center = [ "clock" ];
       modules-right = [
+        "custom/awake"
         "custom/update"
         "tray"
         "privacy"
@@ -333,6 +334,7 @@ in
       #custom-power,
       #custom-bose,
       #custom-update,
+      #custom-awake,
       #tray {
         padding: 0 10px;
       }
@@ -355,6 +357,7 @@ in
       #battery.critical { color: #f38ba8; }
       #custom-temps.critical { color: #f38ba8; }
       #custom-update.stale { color: #f9e2af; }
+      #custom-awake.on { color: #fab387; }
       #network.disconnected { color: #f38ba8; }
       #custom-power { color: #f38ba8; padding-right: 14px; }
     '';

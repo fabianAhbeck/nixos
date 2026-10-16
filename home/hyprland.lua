@@ -173,6 +173,9 @@ hl.bind(shift("Q"), exec("powermenu"))
 -- Session
 -- Escape rather than L, which is vim-right below. Caps Lock is Escape too.
 hl.bind(key("Escape"), exec("loginctl lock-session"))
+-- Stay awake: no suspend on idle or lid close until pressed again
+-- (home/stay-awake.nix).
+hl.bind(key("I"), exec("stay-awake"))
 
 -- Focus and move windows: arrows or vim keys (H/J/K/L = left/down/up/right).
 for k, dir in pairs({

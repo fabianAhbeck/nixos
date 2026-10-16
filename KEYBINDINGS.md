@@ -52,6 +52,7 @@ them. `SUPER` is the Windows key.
 | Keys | Action |
 | --- | --- |
 | `SUPER + Escape` (or `SUPER + Caps Lock`) | Lock screen |
+| `SUPER + I` | Stay awake on/off: no suspend on idle or lid close (a coffee cup in the bar while on; click it to turn off). For a long job you walk away from |
 | `SUPER + SHIFT + Q` | Power menu: lock, log out, suspend, hibernate, reboot, shut down |
 
 The power menu is also the red button at the right end of Waybar.

@@ -22,6 +22,7 @@ in
     ./battery.nix
     ./update-reminder.nix
     ./repos.nix
+    ./stay-awake.nix
   ];
 
   home.username = "fabian";
