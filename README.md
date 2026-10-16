@@ -9,7 +9,7 @@ Keybindings and handy commands: [KEYBINDINGS.md](KEYBINDINGS.md).
 | Host | Machine | Notes |
 |---|---|---|
 | `zenbook` | ASUS ZenBook UX425EA — i7-1165G7 (Tiger Lake), Iris Xe, 32 GB, 1 TB NVMe, 1080p panel | laptop: TLP, battery limit, hibernation, home VPN |
-| — | desktop (NVIDIA, ultrawide) | planned; see [Adding a machine](#adding-a-machine) |
+| `desktop` | Intel CPU, NVIDIA GPU (Turing or newer, open kernel module), 5120x1440 ultrawide, Wi-Fi | LTS kernel for the NVIDIA driver, 8 GB swap, no hibernation |
 
 ## Day to day
 
@@ -66,11 +66,8 @@ home/                     Home Manager; reads my.* as osConfig.my
    generated on the machine as below.
 3. One line in `flake.nix`: `nixosConfigurations.<name> = mkHost "<name>";`
 
-For the planned desktop: `hardware.nvidia` with the open kernel module and
-`services.xserver.videoDrivers = [ "nvidia" ]`, `my.monitors` with the
-ultrawide's mode and refresh rate (its scale steps come out as 1 / 1.25 /
-1.33 / 1.6 / 2), and none of zenbook's laptop power, hibernation or VPN
-settings.
+`hosts/desktop/default.nix` is the example for a desktop: NVIDIA, no
+backlight, none of zenbook's laptop power, hibernation or VPN settings.
 
 ## Installing on a machine
 

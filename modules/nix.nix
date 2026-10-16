@@ -46,9 +46,9 @@
     optimise.automatic = true;
   };
 
-  # Personal laptop: Steam, Discord, VS Code, Claude Code and the Intel
-  # microcode are all unfree. Flipping the whole switch rather than
-  # maintaining a predicate list that Steam alone would blow up.
+  # Personal machines: Steam, Discord, VS Code, Claude Code, the NVIDIA
+  # driver and the Intel microcode are all unfree. Flipping the whole switch
+  # rather than maintaining a predicate list that Steam alone would blow up.
   nixpkgs.config.allowUnfree = true;
 
   # Rebuilds should not be silently reverted by a stale channel.

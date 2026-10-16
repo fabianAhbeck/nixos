@@ -1,7 +1,12 @@
 # Basics every machine gets: boot, networking, locale and console, the user,
 # sudo, firmware updates, and the Home Manager wiring. Hardware, power and
 # anything else specific to one machine lives in hosts/<name>/.
-{ inputs, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 {
   ###########################################################################
   # Boot
@@ -20,7 +25,8 @@
   # and it is what TPM2 unlock needs if you add it later.
   boot.initrd.systemd.enable = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Newest kernel by default; a host can pin another (desktop: LTS, for NVIDIA).
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
   # plymouth adds `splash` to the kernel command line itself.
   boot.plymouth.enable = true;

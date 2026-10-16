@@ -1,5 +1,5 @@
 {
-  description = "Fabian's NixOS configuration (ASUS ZenBook UX425EA)";
+  description = "Fabian's NixOS configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -45,6 +45,7 @@
     in
     {
       nixosConfigurations.zenbook = mkHost "zenbook";
+      nixosConfigurations.desktop = mkHost "desktop";
 
       # USB installer (installer/): `nix build .#installer-iso`, then write
       # result/iso/*.iso to a stick. See "Installing on a machine" in README.md.
