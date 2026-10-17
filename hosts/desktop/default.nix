@@ -24,11 +24,12 @@
 
   my = {
     monitors = [
-      # Output name and refresh rate are a guess until the first boot:
-      # check with `hyprctl monitors all`. A wrong output name only means
-      # Hyprland picks the preferred mode at scale 1 by itself.
+      # Verified with `hyprctl monitors all` after the first boot: the
+      # ultrawide is on DP-3 and offers 5120x1440 at 120, 100 and 60 Hz. A
+      # wrong output name only means Hyprland picks the preferred mode at
+      # scale 1 by itself (which was 3840x1080 here).
       {
-        output = "DP-1";
+        output = "DP-3";
         mode = "5120x1440@120";
         position = "0x0";
         scale = 1;
