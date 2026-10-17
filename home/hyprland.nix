@@ -136,19 +136,4 @@ in
       esac
     '')
   ];
-
-  # Night light: warm the screen in the evening, back to normal in the morning.
-  services.hyprsunset = {
-    enable = true;
-    settings.profile = [
-      {
-        time = "07:00";
-        identity = true;
-      }
-      {
-        time = "20:30";
-        temperature = 4000;
-      }
-    ];
-  };
 }
