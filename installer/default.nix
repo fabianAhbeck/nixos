@@ -25,9 +25,10 @@
   nixpkgs.config.allowUnfree = true;
   hardware.enableAllFirmware = true;
 
-  # NetworkManager instead of the ISO's wpa_supplicant: `nmtui` to connect.
+  # NetworkManager: `nmtui` to connect. It turns networking.wireless on
+  # itself, to drive wpa_supplicant over D-Bus -- don't force that off, or
+  # every Wi-Fi card stays "unavailable".
   networking.networkmanager.enable = true;
-  networking.wireless.enable = lib.mkForce false;
 
   nix.settings.experimental-features = [
     "nix-command"
